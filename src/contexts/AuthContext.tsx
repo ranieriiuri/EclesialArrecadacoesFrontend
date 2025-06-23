@@ -1,10 +1,10 @@
 // src/contexts/AuthContext.tsx
 import { createContext, useContext, useEffect, useState } from "react";
 import api from "@/services/api";
-import Loading from "@/components/ui/Loading";
-import { User } from "@/types/User"; // ✅ novo import
+import { User } from "@/types/User";
+import { useNavigate } from "react-router-dom";
 
-interface AuthContextType {
+interface AuthContextData {
   token: string | null;
   user: User | null;
   login: (email: string, senha: string) => Promise<boolean>;
@@ -13,24 +13,24 @@ interface AuthContextType {
   error: string | null;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextData>({} as AuthContextData);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setToken] = useState<string | null>(localStorage.getItem("token"));
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(!!token);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
-  // Validação inicial do token
   useEffect(() => {
-    const initializeUser = async () => {
+    const fetchUser = async () => {
       if (token) {
         api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
         try {
-          const response = await api.get<User>("/auth/me");
-          setUser(response.data);
-        } catch (err) {
-          logout(); // token inválido
+          const { data } = await api.get("/auth/me");
+          setUser(data);
+        } catch {
+          logout(); // token inválido ou expirado
         } finally {
           setLoading(false);
         }
@@ -38,24 +38,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setLoading(false);
       }
     };
-
-    initializeUser();
+    fetchUser();
   }, [token]);
 
   const login = async (email: string, senha: string): Promise<boolean> => {
     try {
       setLoading(true);
       setError(null);
-      const response = await api.post("/auth/login", { email, senha });
-      const { token } = response.data;
+
+      const { data } = await api.post("/auth/login", { email, senha });
+      const { token, user } = data;
 
       localStorage.setItem("token", token);
-      setToken(token);
       api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+      setToken(token);
+      setUser(user);
 
-      const me = await api.get<User>("/auth/me");
-      setUser(me.data);
-
+      navigate("/dashboard");
       return true;
     } catch (err: any) {
       setError(
@@ -72,12 +71,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     delete api.defaults.headers.common["Authorization"];
     setToken(null);
     setUser(null);
+    navigate("/");
   };
-
-  // 🔄 Se estiver carregando inicialmente, mostra loading screen
-  if (loading) {
-    return <div className="text-center py-10">Carregando...</div>; // ou <Loading />
-  }
 
   return (
     <AuthContext.Provider value={{ token, user, login, logout, loading, error }}>
@@ -87,7 +82,5 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 }
 
 export function useAuth() {
-  const context = useContext(AuthContext);
-  if (!context) throw new Error("useAuth deve ser usado dentro de AuthProvider");
-  return context;
+  return useContext(AuthContext);
 }

@@ -47,13 +47,13 @@ export default function Login() {
           <div className="flex-1 space-y-4 text-center md:text-left">
             <div className="flex items-center justify-center md:justify-start gap-4">
               <img src="/eclesial.svg" alt="Logo" className="h-18" />
-              <h1 className="text-7xl font-bold">Eclesial</h1>
+              <h1 className="text-7xl font-bold ">Eclesial</h1>
             </div>
-            <p className="text-muted-foreground text-amber-600">
-              Uma plataforma de gestão de arrecadações para igrejas...
+            <p className="text-muted-foreground text-amber-600 ">
+              Uma plataforma open source de gestão de arrecadações para igrejas...
             </p>
             <p className="text-muted-foreground text-amber-600">
-              Pensada e projetada pra que cada gesto de amor em forma de doação faça a diferença!
+              Pensada e projetada para que cada gesto de amor em forma de doação faça a diferença!
             </p>
           </div>
 
@@ -77,13 +77,13 @@ export default function Login() {
                     onChange={(e) => setSenha(e.target.value)}
                     aria-label="Senha"
                   />
-                  <Button type="submit" className="w-full" disabled={loading}>
+                  <Button type="submit" className="w-full text-white hover:text-amber-600" disabled={loading}>
                     {loading ? "Entrando..." : "Entrar"}
                   </Button>
                 </form>
 
                 {(formError || error) && (
-                  <p className="text-red-500 text-sm mt-2 text-center">
+                  <p className="text-red-600 text-sm mt-2 text-center">
                     {formError || error}
                   </p>
                 )}
