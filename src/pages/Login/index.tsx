@@ -16,14 +16,14 @@ export default function Login() {
                 {/* Coluna 1 - texto e logo */}
                 <div className="flex-1 space-y-4 text-center md:text-left">
                 <div className="flex items-center justify-center md:justify-start gap-4">
-                    <img src="/vite.svg" alt="Logo" className="h-16" />
-                    <h1 className="text-3xl font-bold">Arrecadações eclesiais</h1>
+                    <img src="/eclesial.svg" alt="Logo" className="h-18" />
+                    <h1 className="text-3xl font-bold">Eclesial</h1>
                 </div>
-                <p className="text-muted-foreground">
-                    Uma plataforma de gestão de doações...
+                <p className="text-muted-foreground text-amber-600">
+                    Uma plataforma de gestão de arrecadações...
                 </p>
-                <p className="text-muted-foreground">
-                    Pensada, projetada e desenvolvida pra viabilizar cada gesto de amor em forma de doação.
+                <p className="text-muted-foreground text-amber-600">
+                    Pensada e projetada pra viabilizar que cada gesto de amor em forma de doação faça a diferença!
                 </p>
                 </div>
 
@@ -35,12 +35,12 @@ export default function Login() {
                     <form className="space-y-4">
                         <Input type="email" placeholder="Email" />
                         <Input type="password" placeholder="Senha" />
-                        <Button type="submit" className="w-full">Entrar</Button>
+                        <Button type="submit" className="w-full text-white hover:text-amber-600">Entrar</Button>
                     </form>
                     <p className="text-sm text-center mt-4 text-gray-400">
                         Não tem conta?{" "}
                         <span 
-                        className="text-blue-400 hover:text-green-500 cursor-pointer transition-colors duration-200"
+                        className="text-amber-600 hover:text-blue-400 cursor-pointer transition-colors duration-200"
                         onClick={() => navigate("/register")}
                         >
                         Cadastre-se
@@ -55,24 +55,24 @@ export default function Login() {
 
 
       {/* Rodapé */}
-      <footer className="w-full py-4 text-center bg-gray-900 text-gray-400 flex flex-col items-center gap-2">
+      <footer className="w-full py-4 text-center bg-zinc-200 text-zinc-800 flex flex-col items-center gap-2">
         <p>ranieriiuri Developments © 2025</p>
         <div className="flex gap-4">
           <a
-            href="https://www.linkedin.com/in/seu-linkedin"
+            href="https://www.linkedin.com/in/ranieriiuri/"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-white transition"
           >
-            <FaLinkedin className="text-2xl" />
+            <FaLinkedin className="text-2xl text-slate-700" />
           </a>
           <a
-            href="https://github.com/seu-github"
+            href="https://github.com/ranieriiuri"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-white transition"
           >
-            <FaGithub className="text-2xl" />
+            <FaGithub className="text-2xl text-slate-700" />
           </a>
         </div>
       </footer>
