@@ -4,11 +4,11 @@ import { AuthProvider } from "@/contexts/AuthContext"; // ⬅️ Importa o provi
 
 function App() {
   return (
-    <AuthProvider> {/* ⬅️ Envolve toda a aplicação */}
-      <BrowserRouter>
+    <BrowserRouter>
+      <AuthProvider>
         <Routes />
-      </BrowserRouter>
-    </AuthProvider>
+      </AuthProvider>
+    </BrowserRouter>
   );
 }
 
