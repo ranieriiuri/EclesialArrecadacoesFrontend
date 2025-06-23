@@ -2,10 +2,11 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import api from "@/services/api";
 import Loading from "@/components/ui/Loading";
+import { User } from "@/types/User"; // ✅ novo import
 
 interface AuthContextType {
   token: string | null;
-  user: any | null;
+  user: User | null;
   login: (email: string, senha: string) => Promise<boolean>;
   logout: () => void;
   loading: boolean;
@@ -14,23 +15,22 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setToken] = useState<string | null>(localStorage.getItem("token"));
-  const [user, setUser] = useState<any | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(!!token);
   const [error, setError] = useState<string | null>(null);
 
+  // Validação inicial do token
   useEffect(() => {
     const initializeUser = async () => {
       if (token) {
         api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
         try {
-          const response = await api.get("/auth/me");
+          const response = await api.get<User>("/auth/me");
           setUser(response.data);
         } catch (err) {
-          console.error("Erro ao recuperar usuário:", err);
-          logout();
+          logout(); // token inválido
         } finally {
           setLoading(false);
         }
@@ -53,7 +53,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setToken(token);
       api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
-      const me = await api.get("/auth/me");
+      const me = await api.get<User>("/auth/me");
       setUser(me.data);
 
       return true;
@@ -74,9 +74,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
   };
 
-  // **Aqui: se estiver carregando, retorna o Loading**
+  // 🔄 Se estiver carregando inicialmente, mostra loading screen
   if (loading) {
-    return <Loading />;
+    return <div className="text-center py-10">Carregando...</div>; // ou <Loading />
   }
 
   return (
