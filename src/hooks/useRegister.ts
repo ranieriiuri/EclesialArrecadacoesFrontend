@@ -1,7 +1,7 @@
-// src/hooks/useRegister.ts
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import api from "@/services/api";
+import { useAuth } from "@/contexts/AuthContext";
 
 export type FormData = {
   nome: string;
@@ -29,22 +29,24 @@ export type FormData = {
 
 export function useRegister() {
   const navigate = useNavigate();
+  const { login } = useAuth(); // <-- integração com AuthContext
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null); // 🔁 renomeado para clareza
+  const [erro, setErro] = useState<string | null>(null);
 
   const registerUser = async (data: FormData) => {
     setLoading(true);
-    setError(null);
-
+    setErro(null);
     try {
-      await api.post("/auth/register", data);
+      const response = await api.post("/auth/register", data);
+      const { token, user } = response.data;
+      login(token, user); // <-- salva no contexto global
       navigate("/dashboard");
     } catch (err: any) {
-      setError(err.response?.data?.message || "Erro ao registrar");
+      setErro(err.response?.data?.message || "Erro ao registrar");
     } finally {
       setLoading(false);
     }
   };
 
-  return { registerUser, loading, error }; // 🔁 'error' em vez de 'erro'
+  return { registerUser, loading, erro };
 }

@@ -3,11 +3,13 @@ import { createContext, useContext, useEffect, useState } from "react";
 import api from "@/services/api";
 import { User } from "@/types/User";
 import { useNavigate } from "react-router-dom";
+import { FormData } from "@/hooks/useRegister"; // tipo do formulário de registro
 
 interface AuthContextData {
   token: string | null;
   user: User | null;
   login: (email: string, senha: string) => Promise<boolean>;
+  register: (data: FormData) => Promise<boolean>; // <-- NOVO
   logout: () => void;
   loading: boolean;
   error: string | null;
@@ -30,7 +32,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const { data } = await api.get("/auth/me");
           setUser(data);
         } catch {
-          logout(); // token inválido ou expirado
+          logout();
         } finally {
           setLoading(false);
         }
@@ -66,6 +68,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const register = async (data: FormData): Promise<boolean> => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const response = await api.post("/auth/register", data);
+      const { token, user } = response.data;
+
+      localStorage.setItem("token", token);
+      api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+      setToken(token);
+      setUser(user);
+
+      navigate("/dashboard");
+      return true;
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Erro ao registrar usuário.");
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const logout = () => {
     localStorage.removeItem("token");
     delete api.defaults.headers.common["Authorization"];
@@ -75,7 +100,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ token, user, login, logout, loading, error }}>
+    <AuthContext.Provider
+      value={{ token, user, login, register, logout, loading, error }}
+    >
       {children}
     </AuthContext.Provider>
   );

@@ -1,10 +1,9 @@
-import { useForm, Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
-import api from "@/services/api";
-import { useRegister } from "@/hooks";
+import { useAuth } from "@/contexts/AuthContext";
 
 type FormData = {
   nome: string;
@@ -12,7 +11,6 @@ type FormData = {
   senha: string;
   cpf: string;
   cargo?: string;
-
   endereco: {
     cep: string;
     logradouro: string;
@@ -23,7 +21,6 @@ type FormData = {
     estado: string;
     pais: string;
   };
-
   igreja: {
     nome: string;
     cnpj: string;
@@ -33,22 +30,21 @@ type FormData = {
 };
 
 export default function Register() {
-  const navigate = useNavigate(); // ✅ Isso precisa vir antes do uso de 'navigate'
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<FormData>();
-
-  const { registerUser, loading, error } = useRegister();
+  const navigate = useNavigate();
+  const { register, handleSubmit, formState: { errors } } = useForm<FormData>();
+  const { register: registerUser, loading, error } = useAuth();
 
   const onSubmit = async (data: FormData) => {
-    await registerUser(data);
+    const success = await registerUser(data);
+    if (success) {
+      // já redireciona no contexto, mas caso queira, pode navegar aqui também
+      // navigate("/dashboard");
+    }
   };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4">
-      <Card className="w-full max-w-lg p-6 overflow-y-auto max-h-[85vh]">
+      <Card className="w-full max-w-lg p-6 overflow-auto max-h-[90vh]">
         <CardContent>
           <h2 className="text-2xl font-semibold mb-6 text-center">Cadastro</h2>
           <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
@@ -98,9 +94,8 @@ export default function Register() {
                 {...register("cpf", {
                   required: "CPF é obrigatório",
                   pattern: {
-                    value: /^\d{11}$/,
-                    message: "CPF deve conter 11 dígitos numéricos",
-                    
+                    value: /^\d{3}\.\d{3}\.\d{3}-\d{2}$/,
+                    message: "CPF inválido (use formato 000.000.000-00)",
                   },
                 })}
                 placeholder="CPF"
@@ -116,61 +111,64 @@ export default function Register() {
             </div>
 
             <h3 className="mt-6 font-semibold">Endereço</h3>
+            {[
+              { name: "cep" as const, label: "CEP", required: true },
+              { name: "logradouro" as const, label: "Logradouro", required: true },
+              { name: "numero" as const, label: "Número", required: true },
+              { name: "complemento" as const, label: "Complemento", required: false },
+              { name: "bairro" as const, label: "Bairro", required: true },
+              { name: "cidade" as const, label: "Cidade", required: true },
+              { name: "estado" as const, label: "Estado", required: true },
+              { name: "pais" as const, label: "País", required: true },
+            ].map(({ name, label, required }) => (
+              <div key={name}>
+                <Input
+                  {...register(`endereco.${name}`, {
+                    required: required ? `${label} é obrigatório` : false,
+                  })}
+                  placeholder={label}
+                />
+                {errors.endereco?.[name] && (
+                  <p className="text-red-600 text-sm mt-1">
+                    {errors.endereco[name]?.message}
+                  </p>
+                )}
+              </div>
+            ))}
 
-        {/* Endereço fields */}
-        {[
-          { name: "cep" as const, label: "CEP", required: true },
-          { name: "logradouro" as const, label: "Logradouro", required: true },
-          { name: "numero" as const, label: "Número", required: true },
-          { name: "complemento" as const, label: "Complemento", required: false },
-          { name: "bairro" as const, label: "Bairro", required: true },
-          { name: "cidade" as const, label: "Cidade", required: true },
-          { name: "estado" as const, label: "Estado", required: true },
-          { name: "pais" as const, label: "País", required: true },
-        ].map(({ name, label, required }) => (
-        <div key={name}>
-        <Input
-          {...register(`endereco.${name}`, {
-          required: required ? `${label} é obrigatório` : false,
-          })}
-    placeholder={label}
-    />
-    {errors.endereco?.[name] && (
-      <p className="text-red-600 text-sm mt-1">
-        {errors.endereco[name]?.message}
-      </p>
-    )}
-  </div>
-))}
+            <h3 className="mt-6 font-semibold">Igreja</h3>
+            {[
+              { name: "nome" as const, label: "Nome da Igreja", required: true },
+              { name: "cnpj" as const, label: "CNPJ", required: true },
+              { name: "cidade" as const, label: "Cidade da Igreja", required: true },
+              { name: "estado" as const, label: "Estado da Igreja", required: true },
+            ].map(({ name, label, required }) => (
+              <div key={name}>
+                <Input
+                  {...register(`igreja.${name}`, {
+                    required: required ? `${label} é obrigatório` : false,
+                  })}
+                  placeholder={label}
+                />
+                {errors.igreja?.[name] && (
+                  <p className="text-red-600 text-sm mt-1">
+                    {errors.igreja[name]?.message}
+                  </p>
+                )}
+              </div>
+            ))}
 
-<h3 className="mt-6 font-semibold">Igreja</h3>
-
-{[
-  { name: "nome" as const, label: "Nome da Igreja", required: true },
-  { name: "cnpj" as const, label: "CNPJ", required: true },
-  { name: "cidade" as const, label: "Cidade da Igreja", required: true },
-  { name: "estado" as const, label: "Estado da Igreja", required: true },
-].map(({ name, label, required }) => (
-  <div key={name}>
-    <Input
-      {...register(`igreja.${name}`, {
-        required: required ? `${label} é obrigatório` : false,
-      })}
-      placeholder={label}
-    />
-    {errors.igreja?.[name] && (
-      <p className="text-red-600 text-sm mt-1">
-        {errors.igreja[name]?.message}
-      </p>
-    )}
-  </div>
-))}
-
-
-            <Button type="submit" disabled={loading}>
-            {loading ? "Registrando..." : "Registrar"}
+            <Button
+              className="w-full mt-4"
+              type="submit"
+              disabled={loading}
+            >
+              {loading ? "Registrando..." : "Registrar"}
             </Button>
-            {error && <p className="text-red-600 text-sm text-center mt-2">{error}</p>}
+
+            {error && (
+              <p className="text-red-600 text-center mt-2">{error}</p>
+            )}
 
             <p className="text-sm text-center mt-4">
               Já tem conta?{" "}
