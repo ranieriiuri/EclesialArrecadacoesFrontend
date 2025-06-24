@@ -1,13 +1,13 @@
 // src/contexts/AuthContext.tsx
 import { createContext, useContext, useEffect, useState } from "react";
 import api from "@/services/api";
-import { User } from "@/types/User";
+import { AuthUser } from "@/types/AuthUser";
 import { useNavigate } from "react-router-dom";
 import { FormData } from "@/hooks/useRegister"; // tipo do formulário de registro
 
 interface AuthContextData {
   token: string | null;
-  user: User | null;
+  user: AuthUser | null;
   login: (email: string, senha: string) => Promise<boolean>;
   register: (data: FormData) => Promise<boolean>; // <-- NOVO
   logout: () => void;
@@ -19,7 +19,7 @@ const AuthContext = createContext<AuthContextData>({} as AuthContextData);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setToken] = useState<string | null>(localStorage.getItem("token"));
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState<boolean>(!!token);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
