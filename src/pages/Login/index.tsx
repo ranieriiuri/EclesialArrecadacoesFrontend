@@ -54,7 +54,7 @@ export default function Login() {
               Uma plataforma open source de gestão de arrecadações para igrejas...
             </p>
             <p className="text-muted-foreground text-amber-600">
-              Pensada e projetada para que cada gesto de amor em forma de doação faça a diferença!
+              Projetada para que cada gesto de amor em forma de doação faça a diferença!
             </p>
           </div>
 

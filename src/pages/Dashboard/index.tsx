@@ -1,11 +1,12 @@
 import { useAuth } from "@/contexts/AuthContext";
+import { useUser } from "@/hooks/useUser";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import {
   Package,
   CalendarPlus,
-  ShoppingCart,
+  LayoutDashboard,
   UserCog,
   Medal,
   History,
@@ -14,43 +15,44 @@ import {
 import Footer from "@/components/ui/Footer";
 
 export default function Dashboard() {
-  const { user, logout } = useAuth();
+  const { user: authUser, logout } = useAuth(); //Dados básicos
+  const { data: user, isLoading, error } = useUser(); // dados completos
 
   const cards = [
     {
       label: "Dados da Conta",
       icon: UserCog,
-      to: "/conta",
+      to: "/account",
     },
     {
       label: "Gerenciar Estoque",
       icon: Package,
-      to: "/estoque",
+      to: "/inventory",
     },
     {
       label: "Criar novo Evento",
       icon: CalendarPlus,
-      to: "/eventos/novo",
+      to: "/events/new",
     },
     {
       label: "Painel evento",
-      icon: ShoppingCart,
-      to: "/vendas",
+      icon: LayoutDashboard,
+      to: "/sales",
     },
     {
       label: "Eventos Anteriores",
       icon: History,
-      to: "/eventos",
+      to: "/events",
     },
     {
       label: "Relatórios de Vendas",
       icon: BarChart3,
-      to: "/relatorios/vendas",
+      to: "/reports/sales",
     },
     {
       label: "Maior Doador",
       icon: Medal,
-      to: "/relatorios/maior-doador",
+      to: "/reports/top-donor",
     }
   ];
 
@@ -79,8 +81,8 @@ export default function Dashboard() {
       <h1 className="!text-[17px] font-normal text-amber-600">
         Olá, {user?.nome?.split(" ")[0] || "usuário"}!
       </h1>
-      {user?.igrejaNome && (
-        <p className="!text-[17px] font-normal text-amber-600">{user?.igrejaNome}</p>
+      {user?.igreja.nome && (
+        <p className="!text-[17px] font-normal text-amber-600">{user?.igreja.nome}</p>
       )}
     </div>
   </div>

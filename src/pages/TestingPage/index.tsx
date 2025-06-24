@@ -1,10 +1,10 @@
 import { useUser } from "@/hooks/useUser";
 
-export default function TestePage() {
-  const { user, loading, error } = useUser();
+export default function TestingPage() {
+  const { data: user, isLoading, error } = useUser();
 
-  if (loading) return <p>Carregando...</p>;
-  if (error) return <p>Erro: {error}</p>;
+  if (isLoading) return <p>Carregando...</p>;
+  if (error) return <p>Erro ao carregar dados do usuário!</p>;
   if (!user) return <p>Nenhum dado encontrado.</p>;
 
   return (

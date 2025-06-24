@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUser } from "@/hooks/useUser";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,8 +28,9 @@ type FormData = {
   confirmarSenha?: string;
 };
 
-export default function Conta() {
-  const { user, token, logout, loading: authLoading, login } = useAuth();
+export default function Account() {
+  const { user: authUser, token, logout, loading: authLoading, login } = useAuth();
+  const { data: user, isLoading, error: userError } = useUser(); // dados completos
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -38,7 +40,7 @@ export default function Conta() {
       email: user?.email || "",
       cpf: user?.cpf || "",
       cargo: user?.cargo || "",
-      igrejaNome: user?.igrejaNome || "",
+      igrejaNome: user?.igreja.nome || "",
       endereco: {
         cep: user?.endereco?.cep || "",
         logradouro: user?.endereco?.logradouro || "",
@@ -60,7 +62,7 @@ export default function Conta() {
         email: user.email,
         cpf: user.cpf,
         cargo: user.cargo || "",
-        igrejaNome: user.igrejaNome || "",
+        igrejaNome: user.igreja.nome || "",
         endereco: {
           cep: user.endereco?.cep || "",
           logradouro: user.endereco?.logradouro || "",
@@ -80,7 +82,7 @@ export default function Conta() {
     setError(null);
     try {
       // Chame o endpoint PUT /usuarios/me (exemplo) para atualizar dados do usuário
-      const response = await fetch("http://localhost:8080/usuarios/me", {
+      const response = await fetch("http://localhost:8080/users/me/data", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
