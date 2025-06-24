@@ -1,57 +1,120 @@
 import { useAuth } from "@/contexts/AuthContext";
-import { Card } from "@/components/ui/card";
+import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
+import {
+  Package,
+  CalendarPlus,
+  ShoppingCart,
+  UserCog,
+  Medal,
+  History,
+  BarChart3,
+} from "lucide-react";
+import Footer from "@/components/ui/Footer";
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
-  const navigate = useNavigate();
+
+  const cards = [
+    {
+      label: "Dados da Conta",
+      icon: UserCog,
+      to: "/conta",
+    },
+    {
+      label: "Gerenciar Estoque",
+      icon: Package,
+      to: "/estoque",
+    },
+    {
+      label: "Criar novo Evento",
+      icon: CalendarPlus,
+      to: "/eventos/novo",
+    },
+    {
+      label: "Painel evento",
+      icon: ShoppingCart,
+      to: "/vendas",
+    },
+    {
+      label: "Eventos Anteriores",
+      icon: History,
+      to: "/eventos",
+    },
+    {
+      label: "Relatórios de Vendas",
+      icon: BarChart3,
+      to: "/relatorios/vendas",
+    },
+    {
+      label: "Maior Doador",
+      icon: Medal,
+      to: "/relatorios/maior-doador",
+    }
+  ];
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header com perfil */}
-      <div className="flex items-center gap-6">
-        {user?.fotoPerfil && (
-          <img
-            src={user.fotoPerfil}
-            alt="Foto de perfil"
-            className="w-20 h-20 rounded-full object-cover border-2 border-zinc-300"
-          />
-        )}
-        <div>
-          <h1 className="text-2xl font-bold">Bem-vindo, {user?.nome || "usuário"}!</h1>
-          <p className="text-muted-foreground">{user?.email}</p>
+    <div className="min-h-screen flex flex-col bg-white">
+      {/* Cabeçalho */}
+  <CardHeader className="flex items-center justify-between mt-6">
+  <div className="flex items-center gap-4">
+    {/* Círculo da foto */}
+    <div className="w-15 h-15 rounded-full bg-gray-200 overflow-hidden">
+      {user?.fotoPerfil ? (
+        <img
+          src={user.fotoPerfil}
+          alt="Foto de perfil"
+          className="w-full h-full object-cover"
+        />
+      ) : (
+        <div className="w-full h-full flex items-center justify-center text-xs text-white bg-zinc-400">
+          {user?.nome?.[0] || "?"}
         </div>
-      </div>
-
-      {/* Menu com funcionalidades */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <CardMenu title="Nova Arrecadação" to="/eventos/novo" />
-        <CardMenu title="Estoque de Peças" to="/pecas" />
-        <CardMenu title="Vendas" to="/vendas" />
-        <CardMenu title="Relatórios" to="/relatorios" />
-        <CardMenu title="Maior Doador" to="/ranking" />
-        <CardMenu title="Minha Conta" to="/conta" />
-      </div>
-
-      {/* Botão de logout */}
-      <Button onClick={logout} variant="destructive" className="mt-6">
-        Sair
-      </Button>
+      )}
     </div>
-  );
-}
 
-// Componente reutilizável para os cards
-function CardMenu({ title, to }: { title: string; to: string }) {
-  const navigate = useNavigate();
+    {/* Nome e Igreja */}
+    <div className="flex flex-col">
+      <h1 className="!text-[17px] font-normal text-amber-600">
+        Olá, {user?.nome?.split(" ")[0] || "usuário"}!
+      </h1>
+      {user?.igrejaNome && (
+        <p className="!text-[17px] font-normal text-amber-600">{user?.igrejaNome}</p>
+      )}
+    </div>
+  </div>
+  {/* Botão sair */}
+  <Button variant="outline" onClick={logout} className="text-sm !text-[12px] !bg-gray-400 text-white hover:text-amber-700">
+    Deslogar
+  </Button>
+</CardHeader>
 
-  return (
-    <Card
-      onClick={() => navigate(to)}
-      className="p-6 cursor-pointer hover:bg-zinc-100 transition rounded-xl shadow-sm"
-    >
-      <h2 className="text-lg font-medium">{title}</h2>
-    </Card>
+
+
+      {/* Conteúdo */}
+      <main className="flex-grow px-6 py-10">
+        <div className="flex items-center justify-center mb-8 gap-3">
+          <img src="/eclesial.svg" alt="Logo Eclesial" className="w-12 h-12 object-contain" />
+          <h2 className="text-2xl font-semibold text-zinc-800">
+            Dashboard
+          </h2>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {cards.map(({ label, icon: Icon, to }) => (
+            <Link to={to} key={label}>
+              <Card className="p-6 h-full hover:shadow-xl hover:drop-shadow-[0_8px_6px_rgba(0,0,128,0.4)] transition-all cursor-pointer flex flex-col items-center text-center gap-2 border border-amber-600">
+                <Icon className="text-4xl text-amber-700" />
+                <h3 className="text-lg font-semibold text-zinc-800">{label}</h3>
+              </Card>
+            </Link>
+          ))}
+        </div>
+      </main>
+
+      {/* Rodapé */}
+      <Footer />
+    </div>
   );
 }

@@ -27,9 +27,9 @@ export default function AppRoutes() {
       <Route
         path="/dashboard"
         element={
-          <PrivateRoute>
+          <PublicRoute>
             <Dashboard />
-          </PrivateRoute>
+          </PublicRoute>
         }
       />
     </Routes>
