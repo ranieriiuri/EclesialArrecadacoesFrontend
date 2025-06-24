@@ -7,7 +7,7 @@ export interface User {
   email: string;
   cpf: string;
   cargo?: string;
-  fotoPerfil?: string;
   endereco: Endereco;
+  fotoPerfil?: string;
   igreja: Igreja;
 }
