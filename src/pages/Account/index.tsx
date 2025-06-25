@@ -1,4 +1,3 @@
-// src/pages/Account.tsx
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUser } from "@/hooks/useUser";
@@ -8,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import Footer from "@/components/ui/Footer";
 import { Link } from "react-router-dom";
+import api from "@/services/api";
 
 type FormData = {
   nome: string;
@@ -30,29 +30,50 @@ type FormData = {
     estado: string;
     pais: string;
   };
-  senhaAtual?: string;
-  novaSenha?: string;
-  confirmarSenha?: string;
+};
+
+type PasswordForm = {
+  senhaAtual: string;
+  novaSenha: string;
+  confirmarSenha: string;
 };
 
 export default function Account() {
-  const { token, logout } = useAuth();
-  const { data: user, isLoading } = useUser();
+  const { token } = useAuth();
+  const { data: user } = useUser();
   const [loading, setLoading] = useState(false);
+  const [loadingSenha, setLoadingSenha] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Toast simples
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+
+  function showToast(message: string, type: "success" | "error" = "success") {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  }
+
+  // Formulário de dados do usuário
   const {
-    register,
-    handleSubmit,
-    reset,
-    watch,
-    formState: { errors },
+    register: registerUser,
+    handleSubmit: handleSubmitUser,
+    reset: resetUser,
+    formState: { errors: errorsUser },
   } = useForm<FormData>();
+
+  // Formulário de senha
+  const {
+    register: registerSenha,
+    handleSubmit: handleSubmitSenha,
+    reset: resetSenha,
+    watch: watchSenha,
+    formState: { errors: errorsSenha },
+  } = useForm<PasswordForm>();
 
   useEffect(() => {
     if (user) {
-      reset({
+      resetUser({
         nome: user.nome,
         email: user.email,
         cpf: user.cpf,
@@ -66,13 +87,13 @@ export default function Account() {
         endereco: user.endereco,
       });
     }
-  }, [user, reset]);
+  }, [user, resetUser]);
 
-  const onSubmit = async (data: FormData) => {
+  const onSubmitDados = async (data: FormData) => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("https://localhost:8443/usuarios/me", {
+      const res = await fetch(`${api}/users/me/data`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -86,7 +107,7 @@ export default function Account() {
         throw new Error(errData.message || "Erro ao atualizar dados.");
       }
 
-      alert("Dados atualizados com sucesso!");
+      showToast("Dados atualizados com sucesso!", "success");
       setEditMode(false);
     } catch (err: any) {
       setError(err.message);
@@ -95,11 +116,73 @@ export default function Account() {
     }
   };
 
-  const novaSenha = watch("novaSenha");
-  const confirmarSenha = watch("confirmarSenha");
+  const onSubmitSenha = async (data: PasswordForm) => {
+    if (data.novaSenha !== data.confirmarSenha) {
+      showToast("A nova senha e a confirmação não coincidem.", "error");
+      return;
+    }
+
+    if (data.novaSenha.length < 6) {
+      showToast("A senha deve ter no mínimo 6 caracteres.", "error");
+      return;
+    }
+
+    if (!/[A-Z]/.test(data.novaSenha)) {
+      showToast("A senha deve conter pelo menos uma letra maiúscula.", "error");
+      return;
+    }
+
+    if (!/[a-z]/.test(data.novaSenha)) {
+      showToast("A senha deve conter pelo menos uma letra minúscula.", "error");
+      return;
+    }
+
+    if (!/\d/.test(data.novaSenha)) {
+      showToast("A senha deve conter pelo menos um número.", "error");
+      return;
+    }
+
+    try {
+      setLoadingSenha(true);
+      const res = await fetch(`${api}/users/change-password`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          senhaAtual: data.senhaAtual,
+          novaSenha: data.novaSenha,
+        }),
+      });
+
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.message || "Erro ao alterar senha.");
+      }
+
+      showToast("Senha alterada com sucesso!", "success");
+      resetSenha();
+    } catch (err: any) {
+      showToast(err.message, "error");
+    } finally {
+      setLoadingSenha(false);
+    }
+  };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50 ">
+    <div className="min-h-screen flex flex-col bg-gray-50">
+      {/* Toast simples */}
+      {toast && (
+        <div
+          className={`fixed top-5 left-1/2 -translate-x-1/2 px-6 py-3 rounded shadow-lg text-white font-semibold z-50 ${
+            toast.type === "success" ? "bg-green-600" : "bg-red-600"
+          }`}
+        >
+          {toast.message}
+        </div>
+      )}
+
       <main className="flex-grow px-6 py-10 max-w-7xl mx-auto w-full">
         {/* Topo com Foto e Nome */}
         <div className="flex items-center justify-between mb-8">
@@ -124,11 +207,20 @@ export default function Account() {
           </div>
 
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setEditMode(!editMode)} className="text-sm !text-[12px] !bg-gray-400 text-white hover:text-amber-700">
+            <Button
+              variant="outline"
+              onClick={() => setEditMode(!editMode)}
+              className="text-sm !text-[12px] !bg-gray-400 text-white hover:text-amber-700"
+            >
               {editMode ? "Cancelar" : "Editar"}
             </Button>
             <Link to="/dashboard">
-              <Button variant="ghost" className="text-sm !text-[12px] !bg-gray-400 text-white hover:text-amber-700">Voltar</Button>
+              <Button
+                variant="ghost"
+                className="text-sm !text-[12px] !bg-gray-400 text-white hover:text-amber-700"
+              >
+                Voltar
+              </Button>
             </Link>
           </div>
         </div>
@@ -139,8 +231,8 @@ export default function Account() {
             <h3 className="text-md font-semibold mt-6 text-slate-700">Usuário</h3>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-              {/* Campos Básicos */}
+            {/* Formulário de Dados */}
+            <form onSubmit={handleSubmitUser(onSubmitDados)} className="space-y-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 ">
                 {[
                   { label: "Nome", field: "nome" },
@@ -149,8 +241,13 @@ export default function Account() {
                   { label: "Cargo", field: "cargo" },
                 ].map(({ label, field }) => (
                   <div key={field}>
-                    <label className="text-sm font-medium text-slate-600">{label}</label>
-                    <Input {...register(field as keyof FormData)} disabled={!editMode} />
+                    <label className="text-sm font-medium text-slate-600">
+                      {label}
+                    </label>
+                    <Input
+                      {...registerUser(field as keyof FormData)}
+                      disabled={!editMode}
+                    />
                   </div>
                 ))}
               </div>
@@ -170,9 +267,11 @@ export default function Account() {
                   ] as const
                 ).map((field) => (
                   <div key={field}>
-                    <label className="text-sm text-slate-600 capitalize">{field}</label>
+                    <label className="text-sm text-slate-600 capitalize">
+                      {field}
+                    </label>
                     <Input
-                      {...register(`endereco.${field}`)}
+                      {...registerUser(`endereco.${field}`)}
                       disabled={!editMode}
                     />
                   </div>
@@ -192,51 +291,70 @@ export default function Account() {
                 ).map(({ field, label }) => (
                   <div key={field}>
                     <label className="text-sm text-slate-600">{label}</label>
-                    <Input {...register(`igreja.${field}`)} disabled={!editMode} />
+                    <Input
+                      {...registerUser(`igreja.${field}`)}
+                      disabled={!editMode}
+                    />
                   </div>
                 ))}
               </div>
-              <br />
-                <h4 className="text-slate-500">* Para alterar a senha do usuário, clique no botão "Editar" acima.</h4>
-              
-              {/* Senhas */}
-              {editMode && (
-                <>
-                  <h3 className="text-md font-semibold mt-6 text-slate-700">Alterar Senha</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <Input
-                      {...register("senhaAtual")}
-                      type="password"
-                      placeholder="Senha Atual"
-                    />
-                    <Input
-                      {...register("novaSenha")}
-                      type="password"
-                      placeholder="Nova Senha"
-                    />
-                    <Input
-                      {...register("confirmarSenha", {
-                        validate: (value) =>
-                          !novaSenha || value === novaSenha || "As senhas não conferem",
-                      })}
-                      type="password"
-                      placeholder="Confirmar Nova Senha"
-                    />
-                  </div>
-                  {errors.confirmarSenha && (
-                    <p className="text-sm text-red-600">{errors.confirmarSenha.message}</p>
-                  )}
-                </>
-              )}
 
-              {/* Botão de salvar */}
               {editMode && (
-                <Button className="w-full mt-4 !bg-slate-700 text-white hover:text-amber-600" type="submit" disabled={loading}>
+                <Button
+                  className="w-full mt-4 !bg-slate-700 text-white hover:text-amber-600"
+                  type="submit"
+                  disabled={loading}
+                >
                   {loading ? "Salvando..." : "Salvar Alterações"}
                 </Button>
               )}
 
               {error && <p className="text-center text-red-600">{error}</p>}
+            </form>
+
+            {/* Formulário de Senha */}
+            <form
+              onSubmit={handleSubmitSenha(onSubmitSenha)}
+              className="mt-10 space-y-4"
+            >
+              <h3 className="text-md font-semibold text-slate-700">
+                Alterar Senha
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
+                <Input
+                  {...registerSenha("senhaAtual")}
+                  type="password"
+                  placeholder="Senha Atual"
+                  disabled={!editMode}
+                />
+                <Input
+                  {...registerSenha("novaSenha")}
+                  type="password"
+                  placeholder="Nova Senha"
+                  disabled={!editMode}
+                />
+                <Input
+                  {...registerSenha("confirmarSenha")}
+                  type="password"
+                  placeholder="Confirmar Nova Senha"
+                  disabled={!editMode}
+                />
+              </div>
+
+              {errorsSenha.confirmarSenha && (
+                <p className="text-sm text-red-600">
+                  {errorsSenha.confirmarSenha.message}
+                </p>
+              )}
+               {editMode && (
+                  <Button
+                  className="mt-2 !bg-slate-700 text-white hover:text-amber-600"
+                  type="submit"
+                  disabled={loadingSenha}
+                >
+                  {loadingSenha ? "Salvando..." : "Salvar Nova Senha"}
+                </Button>
+              )}
             </form>
           </CardContent>
         </Card>
