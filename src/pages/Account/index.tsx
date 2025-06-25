@@ -8,6 +8,7 @@ import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import Footer from "@/components/ui/Footer";
 import { Link } from "react-router-dom";
 import api from "@/services/api";
+import { useQueryClient } from "@tanstack/react-query";
 
 type FormData = {
   nome: string;
@@ -45,6 +46,9 @@ export default function Account() {
   const [loadingSenha, setLoadingSenha] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [uploadingFoto, setUploadingFoto] = useState(false);
+  const queryClient = useQueryClient();
+
 
   // Toast simples
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
@@ -89,28 +93,68 @@ export default function Account() {
     }
   }, [user, resetUser]);
 
+  const handleUploadFoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+  
+    if (file.size > 5 * 1024 * 1024) {
+      showToast("A imagem deve ter no máximo 5MB.", "error");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("foto", file);
+  
+    try {
+      setUploadingFoto(true);
+  
+      const res = await api.put("/users/me/photo", formData, {
+        headers: {
+          // NÃO defina Content-Type manualmente, o axios lida com isso
+          Authorization: `Bearer ${token}`,
+        },
+      });
+  
+      const novaUrl = res.data; // a resposta é a URL da imagem
+  
+      showToast("Foto atualizada com sucesso!", "success");
+  
+      // Recarrega para refletir nova foto (ou substitua com mutate/swr)
+      window.location.reload();
+  
+    } catch (err: any) {
+      const errorMsg =
+        err.response?.data?.message ||
+        err.message ||
+        "Erro desconhecido ao enviar foto";
+      showToast(errorMsg, "error");
+      console.error("Erro upload foto:", err);
+    } finally {
+      setUploadingFoto(false);
+    }
+  };
+  
   const onSubmitDados = async (data: FormData) => {
     setLoading(true);
     setError(null);
+  
     try {
-      const res = await fetch(`${api}/users/me/data`, {
-        method: "PUT",
+      await api.put("/users/me/data", data, {
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(data),
       });
-
-      if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.message || "Erro ao atualizar dados.");
-      }
-
+  
+      // Invalida os dados do usuário para forçar o refetch
+      await queryClient.invalidateQueries({ queryKey: ["user"] });
+  
       showToast("Dados atualizados com sucesso!", "success");
       setEditMode(false);
     } catch (err: any) {
-      setError(err.message);
+      const errorMsg =
+        err.response?.data?.message || err.message || "Erro ao atualizar dados.";
+      setError(errorMsg);
+      showToast(errorMsg, "error");
     } finally {
       setLoading(false);
     }
@@ -121,54 +165,53 @@ export default function Account() {
       showToast("A nova senha e a confirmação não coincidem.", "error");
       return;
     }
-
+  
     if (data.novaSenha.length < 6) {
       showToast("A senha deve ter no mínimo 6 caracteres.", "error");
       return;
     }
-
+  
     if (!/[A-Z]/.test(data.novaSenha)) {
       showToast("A senha deve conter pelo menos uma letra maiúscula.", "error");
       return;
     }
-
+  
     if (!/[a-z]/.test(data.novaSenha)) {
       showToast("A senha deve conter pelo menos uma letra minúscula.", "error");
       return;
     }
-
+  
     if (!/\d/.test(data.novaSenha)) {
       showToast("A senha deve conter pelo menos um número.", "error");
       return;
     }
-
+  
     try {
       setLoadingSenha(true);
-      const res = await fetch(`${api}/users/change-password`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
+  
+      await api.post(
+        "/users/change-password",
+        {
           senhaAtual: data.senhaAtual,
           novaSenha: data.novaSenha,
-        }),
-      });
-
-      if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.message || "Erro ao alterar senha.");
-      }
-
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
       showToast("Senha alterada com sucesso!", "success");
       resetSenha();
     } catch (err: any) {
-      showToast(err.message, "error");
+      const errorMsg =
+        err.response?.data?.message || err.message || "Erro ao alterar senha.";
+      showToast(errorMsg, "error");
     } finally {
       setLoadingSenha(false);
     }
-  };
+  };    
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
@@ -198,14 +241,33 @@ export default function Account() {
                 user?.nome?.[0] || "?"
               )}
             </div>
-            <div>
+
+            <div className="flex flex-col">
               <h2 className="text-2xl font-semibold text-slate-500">
                 {user?.nome?.split(" ")[0] || "Usuário"}
               </h2>
               <p className="text-sm text-zinc-600">Igreja: {user?.igreja.nome}</p>
-            </div>
-          </div>
 
+              {/* Upload da foto */}
+              {editMode && (
+                <div className="mt-2">
+                  <label className="text-sm text-amber-600 font-medium cursor-pointer">
+                    <span className="underline">Upload Foto</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleUploadFoto}
+                      className="hidden"
+                      disabled={uploadingFoto}
+                    />
+                  </label>
+                  {uploadingFoto && (
+                    <p className="text-xs text-slate-500 mt-1">Enviando foto...</p>
+                  )}
+                </div>
+              )}
+            </div>
+</div>
           <div className="flex gap-2">
             <Button
               variant="outline"
