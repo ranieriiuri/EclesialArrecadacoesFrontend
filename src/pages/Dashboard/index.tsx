@@ -105,10 +105,10 @@ export default function Dashboard() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {cards.map(({ label, icon: Icon, to }) => (
-            <Link to={to} key={label}>
-              <Card className="p-6 h-full hover:shadow-xl hover:drop-shadow-[0_8px_6px_rgba(0,0,128,0.4)] transition-all cursor-pointer flex flex-col items-center text-center gap-2 border border-amber-600">
+            <Link to={to} key={label} className="group">
+              <Card className="p-6 h-full hover:shadow-xl hover:drop-shadow-[0_8px_6px_rgba(250,250,128,0.2)] hover:bg-slate-900 transition-all cursor-pointer flex flex-col items-center text-center gap-2 border border-amber-600 transition-colors">
                 <Icon className="text-4xl text-amber-700" />
-                <h3 className="text-lg font-semibold text-zinc-800">{label}</h3>
+                <h3 className="text-lg font-semibold text-zinc-800 group-hover:text-amber-600 transition-colors">{label}</h3>
               </Card>
             </Link>
           ))}
