@@ -72,7 +72,7 @@ export default function Account() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("http://localhost:8080/usuarios/me", {
+      const res = await fetch("https://localhost:8443/usuarios/me", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -134,9 +134,9 @@ export default function Account() {
         </div>
 
         <Card className="p-6 border-none shadow-none">
-          <h2 className="text-3xl text-amber-600 font-semibold">Informações da conta</h2>
+          <h2 className="text-3xl text-amber-600 font-semibold">Meus dados</h2>
           <CardHeader>
-            <h3 className="text-md font-semibold mt-6 text-slate-700">Meus dados</h3>
+            <h3 className="text-md font-semibold mt-6 text-slate-700">Usuário</h3>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -192,14 +192,13 @@ export default function Account() {
                 ).map(({ field, label }) => (
                   <div key={field}>
                     <label className="text-sm text-slate-600">{label}</label>
-                    <Input {...register(`igreja.${field}`)} disabled />
+                    <Input {...register(`igreja.${field}`)} disabled={!editMode} />
                   </div>
                 ))}
               </div>
               <br />
-              <p>
                 <h4 className="text-slate-500">* Para alterar a senha do usuário, clique no botão "Editar" acima.</h4>
-              </p>
+              
               {/* Senhas */}
               {editMode && (
                 <>
