@@ -1,18 +1,25 @@
-import { useState, useEffect } from "react";
+// src/pages/Account.tsx
+import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUser } from "@/hooks/useUser";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import Footer from "@/components/ui/Footer";
+import { Link } from "react-router-dom";
 
 type FormData = {
   nome: string;
   email: string;
   cpf: string;
   cargo?: string;
-  igrejaNome?: string;
+  igreja: {
+    nome: string;
+    cnpj?: string;
+    cidade?: string;
+    estado?: string;
+  };
   endereco: {
     cep: string;
     logradouro: string;
@@ -29,50 +36,34 @@ type FormData = {
 };
 
 export default function Account() {
-  const { user: authUser, token, logout, loading: authLoading, login } = useAuth();
-  const { data: user, isLoading, error: userError } = useUser(); // dados completos
+  const { token, logout } = useAuth();
+  const { data: user, isLoading } = useUser();
   const [loading, setLoading] = useState(false);
+  const [editMode, setEditMode] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const { register, handleSubmit, formState: { errors }, reset, watch } = useForm<FormData>({
-    defaultValues: {
-      nome: user?.nome || "",
-      email: user?.email || "",
-      cpf: user?.cpf || "",
-      cargo: user?.cargo || "",
-      igrejaNome: user?.igreja.nome || "",
-      endereco: {
-        cep: user?.endereco?.cep || "",
-        logradouro: user?.endereco?.logradouro || "",
-        numero: user?.endereco?.numero || "",
-        complemento: user?.endereco?.complemento || "",
-        bairro: user?.endereco?.bairro || "",
-        cidade: user?.endereco?.cidade || "",
-        estado: user?.endereco?.estado || "",
-        pais: user?.endereco?.pais || "",
-      }
-    }
-  });
+  const {
+    register,
+    handleSubmit,
+    reset,
+    watch,
+    formState: { errors },
+  } = useForm<FormData>();
 
-  // Para sincronizar formulário caso user atualize
   useEffect(() => {
     if (user) {
       reset({
         nome: user.nome,
         email: user.email,
         cpf: user.cpf,
-        cargo: user.cargo || "",
-        igrejaNome: user.igreja.nome || "",
-        endereco: {
-          cep: user.endereco?.cep || "",
-          logradouro: user.endereco?.logradouro || "",
-          numero: user.endereco?.numero || "",
-          complemento: user.endereco?.complemento || "",
-          bairro: user.endereco?.bairro || "",
-          cidade: user.endereco?.cidade || "",
-          estado: user.endereco?.estado || "",
-          pais: user.endereco?.pais || "",
-        }
+        cargo: user.cargo,
+        igreja: {
+          nome: user.igreja.nome,
+          cnpj: user.igreja.cnpj,
+          cidade: user.igreja.cidade,
+          estado: user.igreja.estado,
+        },
+        endereco: user.endereco,
       });
     }
   }, [user, reset]);
@@ -81,23 +72,22 @@ export default function Account() {
     setLoading(true);
     setError(null);
     try {
-      // Chame o endpoint PUT /usuarios/me (exemplo) para atualizar dados do usuário
-      const response = await fetch("http://localhost:8080/users/me/data", {
+      const res = await fetch("http://localhost:8080/usuarios/me", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(data)
+        body: JSON.stringify(data),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Erro ao atualizar dados.");
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.message || "Erro ao atualizar dados.");
       }
 
-      // Se precisar atualizar o contexto com os novos dados, pode chamar login ou atualizar o user no contexto (ajustar seu AuthContext)
       alert("Dados atualizados com sucesso!");
+      setEditMode(false);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -105,159 +95,153 @@ export default function Account() {
     }
   };
 
-  // Exemplo simples para alteração de senha (pode fazer parte do mesmo form ou formulário separado)
   const novaSenha = watch("novaSenha");
   const confirmarSenha = watch("confirmarSenha");
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-100">
-      <main className="flex-grow px-6 py-8 max-w-5xl mx-auto w-full">
-        <Card className="p-6">
+    <div className="min-h-screen flex flex-col bg-gray-50 ">
+      <main className="flex-grow px-6 py-10 max-w-7xl mx-auto w-full">
+        {/* Topo com Foto e Nome */}
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-4">
+            <div className="w-16 h-16 rounded-full overflow-hidden bg-zinc-300 text-white flex items-center justify-center text-xl">
+              {user?.fotoPerfil ? (
+                <img
+                  src={user.fotoPerfil}
+                  alt="Foto de perfil"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                user?.nome?.[0] || "?"
+              )}
+            </div>
+            <div>
+              <h2 className="text-2xl font-semibold text-slate-500">
+                {user?.nome?.split(" ")[0] || "Usuário"}
+              </h2>
+              <p className="text-sm text-zinc-600">Igreja: {user?.igreja.nome}</p>
+            </div>
+          </div>
+
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setEditMode(!editMode)} className="text-sm !text-[12px] !bg-gray-400 text-white hover:text-amber-700">
+              {editMode ? "Cancelar" : "Editar"}
+            </Button>
+            <Link to="/dashboard">
+              <Button variant="ghost" className="text-sm !text-[12px] !bg-gray-400 text-white hover:text-amber-700">Voltar</Button>
+            </Link>
+          </div>
+        </div>
+
+        <Card className="p-6 border-none shadow-none">
+          <h2 className="text-3xl text-amber-600 font-semibold">Informações da conta</h2>
           <CardHeader>
-            <h2 className="text-2xl font-semibold mb-6 text-center text-amber-600">
-              Dados da Conta
-            </h2>
+            <h3 className="text-md font-semibold mt-6 text-slate-700">Meus dados</h3>
           </CardHeader>
           <CardContent>
-            <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Input
-                    {...register("nome", { required: "Nome é obrigatório" })}
-                    placeholder="Nome completo"
-                  />
-                  {errors.nome && (
-                    <p className="text-red-600 text-sm">{errors.nome.message}</p>
-                  )}
-                </div>
-
-                <div>
-                  <Input
-                    {...register("email", {
-                      required: "Email é obrigatório",
-                      pattern: {
-                        value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                        message: "Email inválido",
-                      },
-                    })}
-                    placeholder="Email"
-                  />
-                  {errors.email && (
-                    <p className="text-red-600 text-sm">{errors.email.message}</p>
-                  )}
-                </div>
-
-                <div>
-                  <Input
-                    {...register("cpf", {
-                      required: "CPF é obrigatório",
-                      pattern: {
-                        value: /^\d{3}\.\d{3}\.\d{3}-\d{2}$/,
-                        message: "CPF inválido (formato 000.000.000-00)",
-                      },
-                    })}
-                    placeholder="CPF"
-                  />
-                  {errors.cpf && (
-                    <p className="text-red-600 text-sm">{errors.cpf.message}</p>
-                  )}
-                </div>
-
-                <div>
-                  <Input {...register("cargo")} placeholder="Cargo (opcional)" />
-                </div>
-
-                <div className="md:col-span-2">
-                  <Input
-                    {...register("igrejaNome")}
-                    placeholder="Nome da Igreja"
-                  />
-                </div>
-
-                {/* Endereço */}
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+              {/* Campos Básicos */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 ">
                 {[
-                { name: "cep", label: "CEP", required: true },
-                { name: "logradouro", label: "Logradouro", required: true },
-                { name: "numero", label: "Número", required: true },
-                { name: "complemento", label: "Complemento", required: false },
-                { name: "bairro", label: "Bairro", required: true },
-                { name: "cidade", label: "Cidade", required: true },
-                { name: "estado", label: "Estado", required: true },
-                { name: "pais", label: "País", required: true },
-                ].map(({ name, label, required }) => {
-                const fieldName = name as keyof FormData["endereco"];
-                return (
-                    <div key={name}>
-                    <Input
-                        {...register(`endereco.${fieldName}`, {
-                        required: required ? `${label} é obrigatório` : false,
-                        })}
-                        placeholder={label}
-                    />
-                    {errors.endereco?.[fieldName] && (
-                        <p className="text-red-600 text-sm">
-                        {errors.endereco[fieldName]?.message}
-                        </p>
-                    )}
-    </div>
-  );
-})}
-
-
-                {/* Senha Atual */}
-                <div>
-                  <Input
-                    {...register("senhaAtual")}
-                    type="password"
-                    placeholder="Senha Atual (para confirmar alterações)"
-                  />
-                </div>
-
-                {/* Nova Senha */}
-                <div>
-                  <Input
-                    {...register("novaSenha", {
-                      validate: (value) =>
-                        !value || (value.length >= 6) || "Nova senha deve ter pelo menos 6 caracteres",
-                    })}
-                    type="password"
-                    placeholder="Nova Senha"
-                  />
-                  {errors.novaSenha && (
-                    <p className="text-red-600 text-sm">{errors.novaSenha.message}</p>
-                  )}
-                </div>
-
-                {/* Confirmar Nova Senha */}
-                <div>
-                  <Input
-                    {...register("confirmarSenha", {
-                      validate: (value) =>
-                        !novaSenha || value === novaSenha || "As senhas não conferem",
-                    })}
-                    type="password"
-                    placeholder="Confirmar Nova Senha"
-                  />
-                  {errors.confirmarSenha && (
-                    <p className="text-red-600 text-sm">{errors.confirmarSenha.message}</p>
-                  )}
-                </div>
+                  { label: "Nome", field: "nome" },
+                  { label: "Email", field: "email" },
+                  { label: "CPF", field: "cpf" },
+                  { label: "Cargo", field: "cargo" },
+                ].map(({ label, field }) => (
+                  <div key={field}>
+                    <label className="text-sm font-medium text-slate-600">{label}</label>
+                    <Input {...register(field as keyof FormData)} disabled={!editMode} />
+                  </div>
+                ))}
               </div>
 
-              <Button
-                className="w-full mt-4"
-                type="submit"
-                disabled={loading}
-              >
-                {loading ? "Salvando..." : "Salvar Alterações"}
-              </Button>
+              {/* Endereço */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {(
+                  [
+                    "cep",
+                    "logradouro",
+                    "numero",
+                    "complemento",
+                    "bairro",
+                    "cidade",
+                    "estado",
+                    "pais",
+                  ] as const
+                ).map((field) => (
+                  <div key={field}>
+                    <label className="text-sm text-slate-600 capitalize">{field}</label>
+                    <Input
+                      {...register(`endereco.${field}`)}
+                      disabled={!editMode}
+                    />
+                  </div>
+                ))}
+              </div>
 
-              {error && <p className="text-red-600 text-center mt-2">{error}</p>}
+              {/* Igreja */}
+              <h3 className="text-md font-semibold mt-6 text-slate-700">Igreja</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {(
+                  [
+                    { field: "nome", label: "Nome" },
+                    { field: "cnpj", label: "CNPJ" },
+                    { field: "cidade", label: "Cidade" },
+                    { field: "estado", label: "Estado" },
+                  ] as const
+                ).map(({ field, label }) => (
+                  <div key={field}>
+                    <label className="text-sm text-slate-600">{label}</label>
+                    <Input {...register(`igreja.${field}`)} disabled />
+                  </div>
+                ))}
+              </div>
+              <br />
+              <p>
+                <h4 className="text-slate-500">* Para alterar a senha do usuário, clique no botão "Editar" acima.</h4>
+              </p>
+              {/* Senhas */}
+              {editMode && (
+                <>
+                  <h3 className="text-md font-semibold mt-6 text-slate-700">Alterar Senha</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <Input
+                      {...register("senhaAtual")}
+                      type="password"
+                      placeholder="Senha Atual"
+                    />
+                    <Input
+                      {...register("novaSenha")}
+                      type="password"
+                      placeholder="Nova Senha"
+                    />
+                    <Input
+                      {...register("confirmarSenha", {
+                        validate: (value) =>
+                          !novaSenha || value === novaSenha || "As senhas não conferem",
+                      })}
+                      type="password"
+                      placeholder="Confirmar Nova Senha"
+                    />
+                  </div>
+                  {errors.confirmarSenha && (
+                    <p className="text-sm text-red-600">{errors.confirmarSenha.message}</p>
+                  )}
+                </>
+              )}
+
+              {/* Botão de salvar */}
+              {editMode && (
+                <Button className="w-full mt-4 !bg-slate-700 text-white hover:text-amber-600" type="submit" disabled={loading}>
+                  {loading ? "Salvando..." : "Salvar Alterações"}
+                </Button>
+              )}
+
+              {error && <p className="text-center text-red-600">{error}</p>}
             </form>
           </CardContent>
         </Card>
       </main>
-
       <Footer />
     </div>
   );

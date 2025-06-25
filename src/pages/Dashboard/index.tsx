@@ -80,9 +80,9 @@ export default function Dashboard() {
     <div className="flex flex-col">
       <h1 className="!text-[17px] font-normal text-amber-600">
         Olá, {user?.nome?.split(" ")[0] || "usuário"}!
-      </h1>
+      </h1> 
       {user?.igreja.nome && (
-        <p className="!text-[17px] font-normal text-amber-600">{user?.igreja.nome}</p>
+        <p className="!text-[15px] font-normal text-zinc-600">Igreja {user?.igreja.nome}</p>
       )}
     </div>
   </div>

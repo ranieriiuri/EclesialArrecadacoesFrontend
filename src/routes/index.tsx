@@ -4,6 +4,7 @@ import Register from "../pages/Register";
 import Dashboard from "../pages/Dashboard";
 import PrivateRoute from "../components/PrivateRoute";
 import PublicRoute from "../components/PublicRoute";
+import Account from "@/pages/Account";
 
 export default function AppRoutes() {
   return (
@@ -29,6 +30,14 @@ export default function AppRoutes() {
         element={
           <PrivateRoute>
             <Dashboard />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/account"
+        element={
+          <PrivateRoute>
+            <Account />
           </PrivateRoute>
         }
       />
