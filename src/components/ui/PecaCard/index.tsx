@@ -6,7 +6,7 @@ import { Trash2, Pencil } from "lucide-react";
 interface PecaCardProps {
   peca: Peca;
   onEditar?: (peca: Peca) => void;
-  onExcluir?: (id: number) => void;
+  onExcluir?: (id: string) => void;
 }
 
 export default function PecaCard({ peca, onEditar, onExcluir }: PecaCardProps) {
@@ -14,18 +14,18 @@ export default function PecaCard({ peca, onEditar, onExcluir }: PecaCardProps) {
     <div className="bg-white rounded-2xl shadow-md p-4 flex justify-between items-center">
       <div>
         <h2 className="text-lg font-semibold text-zinc-800">{peca.nome}</h2>
-        <p className="text-sm text-zinc-500">
-          Categoria: {peca.categoria}
-        </p>
-        {peca.tamanho && (
-          <p className="text-sm text-zinc-500">
-            Tamanho: {peca.tamanho}
-          </p>
+        <p className="text-sm text-zinc-500">Categoria: {peca.categoria}</p>
+
+        {peca.cor && (
+          <p className="text-sm text-zinc-500">Cor: {peca.cor}</p>
         )}
-        {peca.doador?.nome && (
-          <p className="text-sm text-zinc-400 mt-1">
-            Doador: {peca.doador.nome}
-          </p>
+
+        <p className="text-sm text-zinc-500">
+          Quantidade: {peca.quantidade} | Preço: R$ {peca.preco.toFixed(2)}
+        </p>
+
+        {peca.observacoes && (
+          <p className="text-sm text-zinc-400 mt-1">Obs: {peca.observacoes}</p>
         )}
       </div>
 

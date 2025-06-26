@@ -1,12 +1,15 @@
 // src/hooks/usePecas.ts
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/services/api";
-import { Peca, NovaPecaComRegistroDoacaoRequest } from "@/types/Peca";
+
+import { Peca } from "@/types/Peca";
+import { Doacao } from "@/types/Doacao";
+import { NovaPecaComRegistroDoacaoRequest } from "@/types/NovaPecaComRegistroDoacaoRequest";
 
 export function usePecas(categoria?: string | null) {
   const queryClient = useQueryClient();
 
-  // 🔍 Listar todas as peças (opcionalmente filtrando por categoria)
+  // 🔍 Listar todas as peças (com filtro por categoria, se houver)
   const { data: pecas = [], isLoading } = useQuery<Peca[]>({
     queryKey: ["pecas", categoria],
     queryFn: async () => {
@@ -18,9 +21,9 @@ export function usePecas(categoria?: string | null) {
     },
   });
 
-  // ➕ Cadastrar nova peça (com doador e doação)
-  const cadastrar = useMutation({
-    mutationFn: async (nova: NovaPecaComRegistroDoacaoRequest) => {
+  // ➕ Cadastrar nova peça com doador e doação
+  const cadastrar = useMutation<Doacao, unknown, NovaPecaComRegistroDoacaoRequest>({
+    mutationFn: async (nova) => {
       const { data } = await api.post("/pecas-com-doacao", nova);
       return data;
     },
@@ -29,9 +32,9 @@ export function usePecas(categoria?: string | null) {
     },
   });
 
-  // ✏️ Atualizar dados de peça
-  const atualizar = useMutation({
-    mutationFn: async (peca: Peca) => {
+  // ✏️ Atualizar apenas os dados da peça
+  const atualizar = useMutation<Peca, unknown, Peca>({
+    mutationFn: async (peca) => {
       const { data } = await api.put(`/pecas/${peca.id}`, peca);
       return data;
     },
@@ -40,9 +43,9 @@ export function usePecas(categoria?: string | null) {
     },
   });
 
-  // 🗑️ Excluir peça
-  const excluir = useMutation({
-    mutationFn: async (id: number) => {
+  // 🗑️ Excluir peça por ID
+  const excluir = useMutation<void, unknown, string>({
+    mutationFn: async (id) => {
       await api.delete(`/pecas/${id}`);
     },
     onSuccess: () => {

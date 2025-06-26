@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { usePecas } from "@/hooks/usePecas";
-import PecaCard from "@/components/PecaCard";
-import PecaFormModal from "@/components/PecaFormModal";
-import FiltroCategoria from "@/components/FiltroCategoria";
+import { usePecas } from "@/hooks/usePeca";
+import PecaCard from "@/components/ui/PecaCard";
+import PecaFormModal from "@/components/ui/PecaFormModal";
+import FiltroCategoria from "@/components/ui/FiltroCategoria";
 import { Button } from "@/components/ui/button";
 
 export default function Inventory() {

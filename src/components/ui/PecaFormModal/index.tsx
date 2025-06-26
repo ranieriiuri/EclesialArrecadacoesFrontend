@@ -3,8 +3,9 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { usePecas } from "@/hooks/usePecas";
-import { Peca, NovaPecaComRegistroDoacaoRequest } from "@/types/Peca";
+import { usePecas } from "@/hooks/usePeca"; // corrigido nome do hook
+import { Peca } from "@/types/Peca";
+import { NovaPecaComRegistroDoacaoRequest } from "@/types/NovaPecaComRegistroDoacaoRequest";
 
 interface Props {
   aberto: boolean;
@@ -18,12 +19,13 @@ export default function PecaFormModal({ aberto, onClose, pecaExistente }: Props)
   const [form, setForm] = useState<NovaPecaComRegistroDoacaoRequest>({
     nome: "",
     categoria: "",
-    tamanho: "",
-    doador: {
-      nome: "",
-      email: "",
-      telefone: "",
-    },
+    cor: "",
+    quantidade: 1,
+    preco: 0,
+    observacoes: "",
+    nomeDoador: "",
+    contato: "",
+    observacoesDoador: "",
   });
 
   useEffect(() => {
@@ -31,23 +33,22 @@ export default function PecaFormModal({ aberto, onClose, pecaExistente }: Props)
       setForm({
         nome: pecaExistente.nome,
         categoria: pecaExistente.categoria,
-        tamanho: pecaExistente.tamanho ?? "",
-        doador: {
-          nome: pecaExistente.doador?.nome ?? "",
-          email: "",
-          telefone: "",
-        },
+        cor: pecaExistente.cor || "",
+        quantidade: pecaExistente.quantidade,
+        preco: pecaExistente.preco,
+        observacoes: pecaExistente.observacoes || "",
       });
     } else {
       setForm({
         nome: "",
         categoria: "",
-        tamanho: "",
-        doador: {
-          nome: "",
-          email: "",
-          telefone: "",
-        },
+        cor: "",
+        quantidade: 1,
+        preco: 0,
+        observacoes: "",
+        nomeDoador: "",
+        contato: "",
+        observacoesDoador: "",
       });
     }
   }, [pecaExistente]);
@@ -55,21 +56,10 @@ export default function PecaFormModal({ aberto, onClose, pecaExistente }: Props)
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const { name, value } = e.target;
 
-    if (name.startsWith("doador.")) {
-      const field = name.split(".")[1];
-      setForm((prev) => ({
-        ...prev,
-        doador: {
-          ...prev.doador,
-          [field]: value,
-        },
-      }));
-    } else {
-      setForm((prev) => ({
-        ...prev,
-        [name]: value,
-      }));
-    }
+    setForm((prev) => ({
+      ...prev,
+      [name]: name === "quantidade" || name === "preco" ? Number(value) : value,
+    }));
   }
 
   function handleSubmit(e: React.FormEvent) {
@@ -81,7 +71,10 @@ export default function PecaFormModal({ aberto, onClose, pecaExistente }: Props)
           ...pecaExistente,
           nome: form.nome,
           categoria: form.categoria,
-          tamanho: form.tamanho,
+          cor: form.cor,
+          quantidade: form.quantidade,
+          preco: form.preco,
+          observacoes: form.observacoes,
         },
         {
           onSuccess: () => onClose(),
@@ -104,55 +97,23 @@ export default function PecaFormModal({ aberto, onClose, pecaExistente }: Props)
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-          <Input
-            name="nome"
-            placeholder="Nome da peça"
-            value={form.nome}
-            onChange={handleChange}
-            required
-          />
-          <Input
-            name="categoria"
-            placeholder="Categoria"
-            value={form.categoria}
-            onChange={handleChange}
-            required
-          />
-          <Input
-            name="tamanho"
-            placeholder="Tamanho (opcional)"
-            value={form.tamanho}
-            onChange={handleChange}
-          />
+          <Input name="nome" placeholder="Nome da peça" value={form.nome} onChange={handleChange} required />
+          <Input name="categoria" placeholder="Categoria" value={form.categoria} onChange={handleChange} required />
+          <Input name="cor" placeholder="Cor (opcional)" value={form.cor} onChange={handleChange} />
+          <Input name="quantidade" type="number" placeholder="Quantidade" value={form.quantidade} onChange={handleChange} required />
+          <Input name="preco" type="number" step="0.01" placeholder="Preço (R$)" value={form.preco} onChange={handleChange} required />
+          <Input name="observacoes" placeholder="Observações" value={form.observacoes} onChange={handleChange} />
 
           {!pecaExistente && (
             <>
-              <Input
-                name="doador.nome"
-                placeholder="Nome do doador"
-                value={form.doador.nome}
-                onChange={handleChange}
-                required
-              />
-              <Input
-                name="doador.email"
-                placeholder="Email do doador (opcional)"
-                value={form.doador.email}
-                onChange={handleChange}
-              />
-              <Input
-                name="doador.telefone"
-                placeholder="Telefone do doador (opcional)"
-                value={form.doador.telefone}
-                onChange={handleChange}
-              />
+              <Input name="nomeDoador" placeholder="Nome do doador" value={form.nomeDoador} onChange={handleChange} required />
+              <Input name="contato" placeholder="Contato (telefone ou email)" value={form.contato} onChange={handleChange} />
+              <Input name="observacoesDoador" placeholder="Observações sobre o doador" value={form.observacoesDoador} onChange={handleChange} />
             </>
           )}
 
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" onClick={onClose}>
-              Cancelar
-            </Button>
+            <Button type="button" variant="outline" onClick={onClose}>Cancelar</Button>
             <Button type="submit" disabled={cadastrar.isPending || atualizar.isPending}>
               {pecaExistente ? "Salvar Alterações" : "Cadastrar"}
             </Button>
