@@ -58,7 +58,7 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
+    <div className="min-h-screen flex flex-col bg-zinc-100">
       {/* Cabeçalho */}
   <CardHeader className="flex items-center justify-between mt-6">
     <UserGreeting user={user} />

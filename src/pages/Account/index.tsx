@@ -9,6 +9,8 @@ import Footer from "@/components/ui/Footer";
 import { Link } from "react-router-dom";
 import api from "@/services/api";
 import { useQueryClient } from "@tanstack/react-query";
+import { ArrowLeft } from "lucide-react";
+import UserGreeting from "@/components/ui/UserGreeting";
 
 type FormData = {
   nome: string;
@@ -214,7 +216,7 @@ export default function Account() {
   };    
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-zinc-100">
       {/* Toast simples */}
       {toast && (
         <div

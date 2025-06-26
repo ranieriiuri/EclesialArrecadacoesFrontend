@@ -29,11 +29,12 @@ export default function PecaCard({ peca, onEditar, onExcluir }: PecaCardProps) {
         )}
       </div>
 
-      <div className="flex gap-2">
+      <div className="flex gap-2 pl-2 text-white ">
         <Button
           variant="outline"
           size="icon"
           onClick={() => onEditar?.(peca)}
+          className="!bg-slate-700"
         >
           <Pencil className="w-4 h-4" />
         </Button>
@@ -41,6 +42,7 @@ export default function PecaCard({ peca, onEditar, onExcluir }: PecaCardProps) {
           variant="destructive"
           size="icon"
           onClick={() => onExcluir?.(peca.id)}
+          className="!bg-red-700"
         >
           <Trash2 className="w-4 h-4" />
         </Button>

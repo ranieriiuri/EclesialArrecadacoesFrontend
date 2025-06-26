@@ -28,8 +28,8 @@ export default function FiltroCategoria({ onChange }: Props) {
   return (
     <div className="mb-4">
       <Label className="text-sm text-zinc-600 mb-1 block">Filtrar por categoria:</Label>
-      <Select onValueChange={handleSelect}>
-        <SelectTrigger className="w-full max-w-xs bg-white">
+      <Select onValueChange={handleSelect} >
+        <SelectTrigger className="w-full max-w-xs !bg-white text-zinc-500 !border-2 !border-zinc-300">
           <SelectValue placeholder="Todas as categorias" />
         </SelectTrigger>
         <SelectContent>

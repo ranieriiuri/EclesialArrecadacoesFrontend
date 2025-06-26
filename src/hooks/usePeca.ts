@@ -1,63 +1,45 @@
-// src/hooks/usePecas.ts
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import api from "@/services/api";
-
 import { Peca } from "@/types/Peca";
-import { Doacao } from "@/types/Doacao";
 import { NovaPecaComRegistroDoacaoRequest } from "@/types/NovaPecaComRegistroDoacaoRequest";
+import { Doacao } from "@/types/Doacao";
 
 export function usePecas(categoria?: string | null) {
-  const queryClient = useQueryClient();
-
-  // 🔍 Listar todas as peças (com filtro por categoria, se houver)
-  const { data: pecas = [], isLoading } = useQuery<Peca[]>({
+  const { data = [], isLoading, refetch } = useQuery<Peca[]>({
     queryKey: ["pecas", categoria],
     queryFn: async () => {
-      const endpoint = categoria
-        ? `/pecas?categoria=${encodeURIComponent(categoria)}`
-        : "/pecas";
+      const endpoint = categoria ? `/pecas/categoria/${categoria}` : "/pecas";
       const { data } = await api.get(endpoint);
       return data;
     },
   });
 
-  // ➕ Cadastrar nova peça com doador e doação
-  const cadastrar = useMutation<Doacao, unknown, NovaPecaComRegistroDoacaoRequest>({
-    mutationFn: async (nova) => {
-      const { data } = await api.post("/pecas-com-doacao", nova);
+  const cadastrar = useMutation({
+    mutationFn: async (nova: NovaPecaComRegistroDoacaoRequest) => {
+      const { data } = await api.post<Doacao>("/pecas-com-doacao", nova);
       return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["pecas"] });
     },
   });
 
-  // ✏️ Atualizar apenas os dados da peça
-  const atualizar = useMutation<Peca, unknown, Peca>({
-    mutationFn: async (peca) => {
+  const atualizar = useMutation({
+    mutationFn: async (peca: Peca) => {
       const { data } = await api.put(`/pecas/${peca.id}`, peca);
       return data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["pecas"] });
-    },
   });
 
-  // 🗑️ Excluir peça por ID
-  const excluir = useMutation<void, unknown, string>({
-    mutationFn: async (id) => {
+  const excluir = useMutation({
+    mutationFn: async (id: number) => {
       await api.delete(`/pecas/${id}`);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["pecas"] });
     },
   });
 
   return {
-    pecas,
+    pecas: data,
     isLoading,
     cadastrar,
     atualizar,
     excluir,
+    refetch, // <- ADICIONE ISSO
   };
 }
