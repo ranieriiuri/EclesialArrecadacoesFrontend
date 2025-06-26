@@ -12,6 +12,7 @@ import {
   History,
   BarChart3,
 } from "lucide-react";
+import UserGreeting from "@/components/ui/UserGreeting";
 import Footer from "@/components/ui/Footer";
 
 export default function Dashboard() {
@@ -60,32 +61,7 @@ export default function Dashboard() {
     <div className="min-h-screen flex flex-col bg-white">
       {/* Cabeçalho */}
   <CardHeader className="flex items-center justify-between mt-6">
-  <div className="flex items-center gap-4">
-    {/* Círculo da foto */}
-    <div className="w-15 h-15 rounded-full bg-gray-200 overflow-hidden">
-      {user?.fotoPerfil ? (
-        <img
-          src={user.fotoPerfil}
-          alt="Foto de perfil"
-          className="w-full h-full object-cover"
-        />
-      ) : (
-        <div className="w-full h-full flex items-center justify-center text-xs text-white bg-zinc-400">
-          {user?.nome?.[0] || "?"}
-        </div>
-      )}
-    </div>
-
-    {/* Nome e Igreja */}
-    <div className="flex flex-col">
-      <h1 className="!text-[17px] font-normal text-amber-600">
-        Olá, {user?.nome?.split(" ")[0] || "usuário"}!
-      </h1> 
-      {user?.igreja.nome && (
-        <p className="!text-[15px] font-normal text-zinc-600">Igreja {user?.igreja.nome}</p>
-      )}
-    </div>
-  </div>
+    <UserGreeting user={user} />
   {/* Botão sair */}
   <Button variant="outline" onClick={logout} className="text-sm !text-[12px] !bg-gray-400 text-white hover:text-amber-700">
     Deslogar
