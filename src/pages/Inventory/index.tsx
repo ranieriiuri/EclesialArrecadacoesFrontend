@@ -9,14 +9,15 @@ import PecaFormModal from "@/components/ui/PecaFormModal";
 import FiltroCategoria from "@/components/ui/FiltroCategoria";
 import { Button } from "@/components/ui/button";
 import { useUser } from "@/hooks/useUser";
+import { Peca } from "@/types/Peca";
 
 export default function Inventory() {
   const navigate = useNavigate();
   const [modalAberto, setModalAberto] = useState(false);
   const [categoriaSelecionada, setCategoriaSelecionada] = useState<string | null>(null);
-
+  const [pecaParaEditar, setPecaParaEditar] = useState<Peca | undefined>(undefined); // ✅ NOVO
+  const { pecas, isLoading: isPecasLoading, refetch, excluir } = usePecas(categoriaSelecionada); // ✅ IMPORTANTE: excluir
   const { data: user, isLoading: isUserLoading } = useUser();
-  const { pecas, isLoading: isPecasLoading, refetch } = usePecas(categoriaSelecionada);
 
   const handleFiltro = (categoria: string | null) => {
     setCategoriaSelecionada(categoria);
@@ -52,22 +53,40 @@ export default function Inventory() {
         {/* Modal de cadastro */}
         <PecaFormModal
           aberto={modalAberto}
-          onClose={() => setModalAberto(false)}
+          pecaExistente={pecaParaEditar}
+          onClose={() => {
+            setModalAberto(false);
+            setPecaParaEditar(undefined);
+          }}
           onSuccess={() => {
             setModalAberto(false);
-            refetch(); // atualiza a listagem ao cadastrar com sucesso
+            setPecaParaEditar(undefined);
+            refetch(); // ✅ Atualiza a listagem após cadastro ou edição
           }}
         />
+
 
         {/* Lista de peças */}
         {isPecasLoading ? (
           <p className="text-center text-sm text-zinc-500 mt-10">Carregando peças...</p>
         ) : pecas.length === 0 ? (
-          <p className="text-center text-sm text-zinc-500 mt-10">Nenhuma peça encontrada.</p>
+          <p className="text-center text-sm text-red-500 mt-10">Nenhuma peça encontrada.</p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-10">
             {pecas.map((peca) => (
-              <PecaCard key={peca.id} peca={peca} />
+              <PecaCard
+              key={peca.id}
+              peca={peca}
+              onEditar={(p) => {
+                setPecaParaEditar(p);        // seta a peça que será editada
+                setModalAberto(true);        // abre o modal com os dados da peça
+              }}
+              onExcluir={(id) => {
+                excluir.mutate(id, {
+                  onSuccess: () => refetch(), // atualiza a lista após excluir
+                });
+              }}
+            />
             ))}
           </div>
         )}

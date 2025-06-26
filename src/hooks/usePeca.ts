@@ -8,15 +8,15 @@ export function usePecas(categoria?: string | null) {
   const { data = [], isLoading, refetch } = useQuery<Peca[]>({
     queryKey: ["pecas", categoria],
     queryFn: async () => {
-      const endpoint = categoria ? `/pecas/categoria/${categoria}` : "/pecas";
+      const endpoint = categoria ? `/pecas/categoria?categoria=${encodeURIComponent(categoria)}` : "/pecas";
       const { data } = await api.get(endpoint);
       return data;
     },
-  });
+  });  
 
   const cadastrar = useMutation({
     mutationFn: async (nova: NovaPecaComRegistroDoacaoRequest) => {
-      const { data } = await api.post<Doacao>("/pecas-com-doacao", nova);
+      const { data } = await api.post<Doacao>("/pecas/pecas-com-doacao", nova);
       return data;
     },
   });
@@ -29,7 +29,7 @@ export function usePecas(categoria?: string | null) {
   });
 
   const excluir = useMutation({
-    mutationFn: async (id: number) => {
+    mutationFn: async (id: string) => {
       await api.delete(`/pecas/${id}`);
     },
   });

@@ -2,19 +2,12 @@
 import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { CATEGORIAS_FIXAS } from "@/consts/categorias";
+
 
 interface Props {
   onChange: (categoria: string | null) => void;
 }
-
-const categoriasFixas = [
-  "Camisa",
-  "Calça",
-  "Vestido",
-  "Sapato",
-  "Acessório",
-  "Outro",
-];
 
 export default function FiltroCategoria({ onChange }: Props) {
   const [categoria, setCategoria] = useState<string | null>(null);
@@ -34,7 +27,7 @@ export default function FiltroCategoria({ onChange }: Props) {
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="todas">Todas</SelectItem>
-          {categoriasFixas.map((cat) => (
+          {CATEGORIAS_FIXAS.map((cat) => (
             <SelectItem key={cat} value={cat}>
               {cat}
             </SelectItem>

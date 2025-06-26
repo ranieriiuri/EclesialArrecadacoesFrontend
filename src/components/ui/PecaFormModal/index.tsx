@@ -1,10 +1,13 @@
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { usePecas } from "@/hooks/usePeca";
 import { Peca } from "@/types/Peca";
 import { NovaPecaComRegistroDoacaoRequest } from "@/types/NovaPecaComRegistroDoacaoRequest";
+import { CATEGORIAS_FIXAS } from "@/consts/categorias";
+import { X } from "lucide-react";
+
 
 interface Props {
   aberto: boolean;
@@ -61,15 +64,14 @@ export default function PecaFormModal({ aberto, onClose, onSuccess, pecaExistent
     setErrors({});
   }, [pecaExistente]);
 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
     const { name, value } = e.target;
-
+  
     setForm((prev) => ({
       ...prev,
       [name]: name === "quantidade" || name === "preco" ? Number(value) : value,
     }));
-
-    // Limpa o erro desse campo ao digitar
+  
     setErrors((prev) => ({ ...prev, [name]: undefined }));
   }
 
@@ -129,8 +131,23 @@ export default function PecaFormModal({ aberto, onClose, onSuccess, pecaExistent
     <Dialog open={aberto} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-lg bg-white/90 backdrop-blur-sm shadow-xl rounded-xl">
         <DialogHeader>
-          <DialogTitle>{pecaExistente ? "Editar Peça" : "Cadastrar Nova Peça"}</DialogTitle>
-        </DialogHeader>
+          <DialogTitle>
+            {pecaExistente ? "Editar Peça" : "Cadastrar Nova Peça"}
+          </DialogTitle>
+          <DialogDescription>
+             Preencha os campos abaixo para {pecaExistente ? "editar a peça" : "cadastrar uma nova"} no estoque.
+          </DialogDescription>
+          {/* Botão de fechar personalizado */}
+          <DialogClose asChild>
+            <button
+                type="button"
+                className="absolute top-4 right-4 rounded-full p-1 !text-white !hover:text-red-600 hover:bg-red-100"
+                aria-label="Fechar"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </DialogClose>
+      </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">
           <div>
@@ -146,14 +163,21 @@ export default function PecaFormModal({ aberto, onClose, onSuccess, pecaExistent
           </div>
 
           <div>
-            <Input
-              name="categoria"
-              placeholder="Categoria"
-              value={form.categoria}
-              onChange={handleChange}
-              required
-              aria-invalid={!!errors.categoria}
-            />
+          <select
+    name="categoria"
+    value={form.categoria}
+    onChange={handleChange}
+    required
+    aria-invalid={!!errors.categoria}
+    className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+  >
+    <option value="">Selecione uma categoria</option>
+    {CATEGORIAS_FIXAS.map((cat) => (
+      <option key={cat} value={cat}>
+        {cat}
+      </option>
+    ))}
+  </select>
             <ErrorMessage message={errors.categoria} />
           </div>
 
@@ -230,10 +254,10 @@ export default function PecaFormModal({ aberto, onClose, onSuccess, pecaExistent
           )}
 
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" onClick={onClose}>
+            <Button type="button" variant="outline" onClick={onClose} className="!bg-slate-700 text-white hover:text-amber-600">
               Cancelar
             </Button>
-            <Button type="submit" disabled={cadastrar.isPending || atualizar.isPending}>
+            <Button type="submit" disabled={cadastrar.isPending || atualizar.isPending} className="!bg-slate-700 text-white hover:text-amber-600">
               {pecaExistente ? "Salvar Alterações" : "Cadastrar"}
             </Button>
           </div>
