@@ -9,11 +9,14 @@ import { Evento } from "@/types/Evento";
 import { VendaModal } from "@/components/ui/VendaModal";
 import { ArrowLeft } from "lucide-react";
 import { eventoEstaEmAndamento } from "@/hooks/useEventos";
+import { useUser } from "@/hooks/useUser";
+import UserGreeting from "@/components/ui/UserGreeting";
 
 export default function EventPanel() {
   const { id } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { data: user, isLoading: isUserLoading } = useUser();
 
   const [selectedPeca, setSelectedPeca] = useState<Peca | null>(null);
 
@@ -57,17 +60,18 @@ export default function EventPanel() {
   const evento = eventoQuery.data!;
 
   return (
-    <div className="max-w-5xl mx-auto p-6">
+    <div className="min-h-screen flex flex-col bg-zinc-100">
       {/* Topo */}
-      <div className="flex items-center justify-between mb-6">
-        <button onClick={() => navigate(-1)} className="text-sm text-gray-600">
-          <ArrowLeft />
+      <div className="flex items-center justify-between mb-6 px-6 py-10">
+        <button onClick={() => navigate(-1)} className="text-sm !text-[12px] !bg-gray-400 text-white hover:text-amber-700">
+           <ArrowLeft />
         </button>
-        <h1 className="text-xl font-semibold">Painel do Evento</h1>
+        {!isUserLoading && user && <UserGreeting user={user} />}
       </div>
+      <h2 className="text-4xl font-bold text-center text-amber-600 mb-6">Painel do evento</h2>
 
       {/* Dados do Evento */}
-      <div className="bg-white shadow p-4 rounded-xl mb-6">
+      <div className="bg-slate-900 text-white shadow p-4 rounded-xl mb-6">
         <p><strong>Tipo:</strong> {evento.tipo}</p>
         <p><strong>Status:</strong> {evento.status}</p>
         <p><strong>Descrição:</strong> {evento.descricao || "Sem descrição"}</p>
@@ -76,10 +80,11 @@ export default function EventPanel() {
       </div>
 
       {/* Ações */}
-      <div className="flex gap-4 mb-8">
+      <div className="flex gap-4 mb-8 items-center justify-between">
         <Button
           onClick={() => iniciarMutation.mutate()}
           disabled={evento.status !== "planejando" || iniciarMutation.isPending}
+          className="!bg-slate-700 text-white hover:text-amber-600"
         >
           {iniciarMutation.isPending ? "Iniciando..." : "Iniciar evento"}
         </Button>
@@ -87,13 +92,14 @@ export default function EventPanel() {
           onClick={() => finalizarMutation.mutate()}
           variant="destructive"
           disabled={evento.status !== "em andamento" || finalizarMutation.isPending}
+          className="!bg-slate-700 text-white hover:text-amber-600"
         >
           {finalizarMutation.isPending ? "Finalizando..." : "Finalizar evento"}
         </Button>
       </div>
 
       {/* Listagem de Peças */}
-      <h2 className="text-lg font-semibold mb-4">Peças disponíveis</h2>
+      <h2 className="text-xl font-semibold mb-4 text-slate-800">Peças disponíveis</h2>
 
       {pecasQuery.isLoading ? (
         <p>Carregando peças...</p>
@@ -102,7 +108,7 @@ export default function EventPanel() {
           {pecasQuery.data?.map((peca) => (
             <div
               key={peca.id}
-              className="bg-white p-4 rounded-xl shadow cursor-pointer hover:bg-gray-100"
+              className="bg-white p-4 rounded-xl shadow cursor-pointer hover:bg-gray-100 border border-slate-800 hover:bg-slate-600 hover:text-white transition-all cursor-pointer"
               onClick={() => {
                 if (eventoEstaEmAndamento(evento)) {
                   setSelectedPeca(peca);

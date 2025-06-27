@@ -59,7 +59,7 @@ export default function NewEvent() {
   if (error) return <p>Erro ao carregar eventos.</p>;
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-zinc-100">
       <main className="flex-grow px-6 py-10 max-w-4xl mx-auto w-full">
         {/* Topo com botão voltar + saudação */}
         <div className="flex items-center justify-between mb-6">
@@ -76,13 +76,13 @@ export default function NewEvent() {
 
         <form onSubmit={handleSubmit} className="space-y-4 mb-8 max-w-lg">
           <div>
-            <Label htmlFor="tipo">Tipo do evento</Label>
+            <Label htmlFor="tipo" className="p-2">Tipo do evento</Label>
             <Select
               value={tipo}
               onValueChange={(value) => setTipo(value as TipoEvento)}
               disabled
             >
-              <SelectTrigger className="w-full">
+              <SelectTrigger className="w-full !bg-zinc-300">
                 <SelectValue placeholder="Selecione o tipo" />
               </SelectTrigger>
               <SelectContent>
@@ -96,7 +96,7 @@ export default function NewEvent() {
           </div>
 
           <div>
-            <Label htmlFor="descricao">Descrição</Label>
+            <Label htmlFor="descricao" className="p-2">Descrição</Label>
             <Input
               id="descricao"
               type="text"
@@ -127,6 +127,7 @@ export default function NewEvent() {
                 <Link
                   to={`/events/${evento.id}`}
                   className="font-semibold text-amber-600 hover:underline block"
+                  title="Clique para gerenciar o evento"
                 >
                   {evento.tipo.charAt(0).toUpperCase() + evento.tipo.slice(1)}
                 </Link>
@@ -152,7 +153,7 @@ export default function NewEvent() {
                 size="sm"
                 onClick={() => excluirEvento.mutate(evento.id)}
                 disabled={excluirEvento.isPending}
-                className="!bg-zinc-400 text-white hover:!bg-red-800"
+                className="!bg-slate-700 text-white hover:!bg-red-700"
               >
                 {excluirEvento.isPending ? "Excluindo..." : "Excluir"}
               </Button>
