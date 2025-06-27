@@ -99,7 +99,7 @@ export default function EventPanel() {
       </div>
 
       {/* Listagem de Peças */}
-      <h2 className="text-xl font-semibold mb-4 text-slate-800">Peças disponíveis</h2>
+      <h2 className="text-xl font-bold mb-4 text-slate-800">Peças disponíveis</h2>
 
       {pecasQuery.isLoading ? (
         <p>Carregando peças...</p>
@@ -139,6 +139,7 @@ export default function EventPanel() {
           evento={evento}
         />
       )}
+      
     </div>
   );
 }

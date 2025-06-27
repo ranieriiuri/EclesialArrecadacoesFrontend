@@ -8,6 +8,7 @@ import Account from "@/pages/Account";
 import Inventory from "@/pages/Inventory";
 import NewEvent from "@/pages/NewEvent";
 import EventPanel from "@/pages/EventPanel";
+import EventListPanel from "@/pages/EventListPanel";
 
 export default function AppRoutes() {
   return (
@@ -65,6 +66,14 @@ export default function AppRoutes() {
         element={
           <PrivateRoute>
             <EventPanel />
+          </PrivateRoute>
+        }
+      />
+      <Route
+          path="/events/panel"
+        element={
+          <PrivateRoute>
+            <EventListPanel />
           </PrivateRoute>
         }
       />
