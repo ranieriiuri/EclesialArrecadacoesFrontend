@@ -11,6 +11,7 @@ import EventPanel from "@/pages/EventPanel";
 import EventListPanel from "@/pages/EventListPanel";
 import EventHistory from "@/pages/EventHistory";
 import EventHistoryDetails from "@/pages/EventHistoryDetails";
+import DonorsRanking from "@/pages/DonorsRanking";
 
 export default function AppRoutes() {
   return (
@@ -92,6 +93,14 @@ export default function AppRoutes() {
         element={
           <PrivateRoute>
             <EventHistoryDetails />
+          </PrivateRoute>
+        }
+      />
+      <Route
+          path="/donors-ranking/range"
+        element={
+          <PrivateRoute>
+            <DonorsRanking />
           </PrivateRoute>
         }
       />

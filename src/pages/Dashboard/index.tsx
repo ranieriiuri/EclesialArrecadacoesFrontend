@@ -53,7 +53,7 @@ export default function Dashboard() {
     {
       label: "Maior Doador",
       icon: Medal,
-      to: "/reports/top-donor",
+      to: "/donors-ranking/range",
     }
   ];
 
