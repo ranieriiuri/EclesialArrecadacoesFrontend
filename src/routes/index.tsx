@@ -9,6 +9,8 @@ import Inventory from "@/pages/Inventory";
 import NewEvent from "@/pages/NewEvent";
 import EventPanel from "@/pages/EventPanel";
 import EventListPanel from "@/pages/EventListPanel";
+import EventHistory from "@/pages/EventHistory";
+import EventHistoryDetails from "@/pages/EventHistoryDetails";
 
 export default function AppRoutes() {
   return (
@@ -74,6 +76,22 @@ export default function AppRoutes() {
         element={
           <PrivateRoute>
             <EventListPanel />
+          </PrivateRoute>
+        }
+      />
+      <Route
+          path="/events/history"
+        element={
+          <PrivateRoute>
+            <EventHistory />
+          </PrivateRoute>
+        }
+      />
+       <Route
+          path="/events/history/:id"
+        element={
+          <PrivateRoute>
+            <EventHistoryDetails />
           </PrivateRoute>
         }
       />

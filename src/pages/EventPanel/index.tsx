@@ -12,6 +12,8 @@ import { eventoEstaEmAndamento } from "@/hooks/useEventos";
 import { useUser } from "@/hooks/useUser";
 import UserGreeting from "@/components/ui/UserGreeting";
 
+// ... (imports mantidos)
+
 export default function EventPanel() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -51,6 +53,10 @@ export default function EventPanel() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["evento", id] });
+      alert("Evento finalizado com sucesso! Você será redirecionado para o dashboard em 5 segundos.");
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 5000);
     },
   });
 
@@ -64,10 +70,11 @@ export default function EventPanel() {
       {/* Topo */}
       <div className="flex items-center justify-between mb-6 px-6 py-10">
         <button onClick={() => navigate(-1)} className="text-sm !text-[12px] !bg-gray-400 text-white hover:text-amber-700">
-           <ArrowLeft />
+          <ArrowLeft />
         </button>
         {!isUserLoading && user && <UserGreeting user={user} />}
       </div>
+
       <h2 className="text-4xl font-bold text-center text-amber-600 mb-6">Painel do evento</h2>
 
       {/* Dados do Evento */}
@@ -75,8 +82,30 @@ export default function EventPanel() {
         <p><strong>Tipo:</strong> {evento.tipo}</p>
         <p><strong>Status:</strong> {evento.status}</p>
         <p><strong>Descrição:</strong> {evento.descricao || "Sem descrição"}</p>
-        <p><strong>Data início:</strong> {evento.dataInicio || "Não iniciada"}</p>
-        <p><strong>Data fim:</strong> {evento.dataFim || "Não finalizada"}</p>
+        <p>
+          <strong>Data início:</strong>{" "}
+          {evento.dataInicio
+            ? new Date(evento.dataInicio).toLocaleString("pt-BR", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+            : "Não iniciada"}
+        </p>
+        <p>
+          <strong>Data fim:</strong>{" "}
+          {evento.dataFim
+            ? new Date(evento.dataFim).toLocaleString("pt-BR", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+            : "Não finalizada"}
+        </p>
       </div>
 
       {/* Ações */}
@@ -91,7 +120,9 @@ export default function EventPanel() {
         <Button
           onClick={() => finalizarMutation.mutate()}
           variant="destructive"
-          disabled={evento.status !== "em andamento" || finalizarMutation.isPending}
+          disabled={
+            evento.status !== "em andamento" || finalizarMutation.isPending
+          }
           className="!bg-slate-700 text-white hover:text-amber-600"
         >
           {finalizarMutation.isPending ? "Finalizando..." : "Finalizar evento"}
@@ -139,7 +170,6 @@ export default function EventPanel() {
           evento={evento}
         />
       )}
-      
     </div>
   );
 }

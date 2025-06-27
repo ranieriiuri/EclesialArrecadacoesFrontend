@@ -115,11 +115,9 @@ export function VendaModal({ open, onClose, peca, evento }: VendaModalProps) {
             <Label>Preço (R$)</Label>
             <Input
               type="number"
-              min="0"
-              step="0.01"
               value={preco}
-              onChange={(e) => setPreco(Number(e.target.value))}
-              disabled={!isEventoValido}
+              readOnly
+              disabled
             />
           </div>
 

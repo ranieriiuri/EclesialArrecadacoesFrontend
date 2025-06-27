@@ -43,7 +43,7 @@ export default function Dashboard() {
     {
       label: "Eventos Anteriores",
       icon: History,
-      to: "/events",
+      to: "/events/history",
     },
     {
       label: "Relatórios de Vendas",
