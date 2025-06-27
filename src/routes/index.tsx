@@ -6,6 +6,8 @@ import PrivateRoute from "../components/PrivateRoute";
 import PublicRoute from "../components/PublicRoute";
 import Account from "@/pages/Account";
 import Inventory from "@/pages/Inventory";
+import NewEvent from "@/pages/NewEvent";
+import EventPanel from "@/pages/EventPanel";
 
 export default function AppRoutes() {
   return (
@@ -47,6 +49,22 @@ export default function AppRoutes() {
         element={
           <PrivateRoute>
             <Inventory />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/events/new"
+        element={
+          <PrivateRoute>
+            <NewEvent />
+          </PrivateRoute>
+        }
+      />
+      <Route
+          path="/events/:id"
+        element={
+          <PrivateRoute>
+            <EventPanel />
           </PrivateRoute>
         }
       />

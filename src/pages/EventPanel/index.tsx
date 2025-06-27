@@ -1,0 +1,138 @@
+import { useParams, useNavigate } from "react-router-dom";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import api from "@/services/api";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Peca } from "@/types/Peca";
+import { Evento } from "@/types/Evento";
+import { VendaModal } from "@/components/ui/VendaModal";
+import { ArrowLeft } from "lucide-react";
+import { eventoEstaEmAndamento } from "@/hooks/useEventos";
+
+export default function EventPanel() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  const [selectedPeca, setSelectedPeca] = useState<Peca | null>(null);
+
+  const eventoQuery = useQuery<Evento>({
+    queryKey: ["evento", id],
+    queryFn: async () => {
+      const { data } = await api.get(`/events/${id}`);
+      return data;
+    },
+  });
+
+  const pecasQuery = useQuery<Peca[]>({
+    queryKey: ["pecas-disponiveis"],
+    queryFn: async () => {
+      const { data } = await api.get("/pecas/disponiveis");
+      return data;
+    },
+  });
+
+  const iniciarMutation = useMutation({
+    mutationFn: async () => {
+      await api.put(`/events/${id}/starting`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["evento", id] });
+    },
+  });
+
+  const finalizarMutation = useMutation({
+    mutationFn: async () => {
+      await api.put(`/events/${id}/finishing`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["evento", id] });
+    },
+  });
+
+  if (eventoQuery.isLoading) return <Skeleton className="h-10 w-32" />;
+  if (eventoQuery.isError) return <p>Erro ao carregar evento.</p>;
+
+  const evento = eventoQuery.data!;
+
+  return (
+    <div className="max-w-5xl mx-auto p-6">
+      {/* Topo */}
+      <div className="flex items-center justify-between mb-6">
+        <button onClick={() => navigate(-1)} className="text-sm text-gray-600">
+          <ArrowLeft />
+        </button>
+        <h1 className="text-xl font-semibold">Painel do Evento</h1>
+      </div>
+
+      {/* Dados do Evento */}
+      <div className="bg-white shadow p-4 rounded-xl mb-6">
+        <p><strong>Tipo:</strong> {evento.tipo}</p>
+        <p><strong>Status:</strong> {evento.status}</p>
+        <p><strong>Descrição:</strong> {evento.descricao || "Sem descrição"}</p>
+        <p><strong>Data início:</strong> {evento.dataInicio || "Não iniciada"}</p>
+        <p><strong>Data fim:</strong> {evento.dataFim || "Não finalizada"}</p>
+      </div>
+
+      {/* Ações */}
+      <div className="flex gap-4 mb-8">
+        <Button
+          onClick={() => iniciarMutation.mutate()}
+          disabled={evento.status !== "planejando" || iniciarMutation.isPending}
+        >
+          {iniciarMutation.isPending ? "Iniciando..." : "Iniciar evento"}
+        </Button>
+        <Button
+          onClick={() => finalizarMutation.mutate()}
+          variant="destructive"
+          disabled={evento.status !== "em andamento" || finalizarMutation.isPending}
+        >
+          {finalizarMutation.isPending ? "Finalizando..." : "Finalizar evento"}
+        </Button>
+      </div>
+
+      {/* Listagem de Peças */}
+      <h2 className="text-lg font-semibold mb-4">Peças disponíveis</h2>
+
+      {pecasQuery.isLoading ? (
+        <p>Carregando peças...</p>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          {pecasQuery.data?.map((peca) => (
+            <div
+              key={peca.id}
+              className="bg-white p-4 rounded-xl shadow cursor-pointer hover:bg-gray-100"
+              onClick={() => {
+                if (eventoEstaEmAndamento(evento)) {
+                  setSelectedPeca(peca);
+                } else {
+                  alert("Este evento ainda não foi iniciado ou já foi finalizado. Inicie o evento para registrar vendas.");
+                }
+              }}
+            >
+              <p className="font-semibold">{peca.nome}</p>
+              <p>Cor: {peca.cor || "-"}</p>
+              <p>Categoria: {peca.categoria}</p>
+              <p>Qtd: {peca.quantidade}</p>
+              <p>Preço: R$ {peca.preco.toFixed(2)}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Modal de venda */}
+      {selectedPeca && (
+        <VendaModal
+          open={!!selectedPeca}
+          onClose={() => {
+            setSelectedPeca(null);
+            queryClient.invalidateQueries({ queryKey: ["pecas-disponiveis"] });
+          }}
+          peca={selectedPeca}
+          evento={evento}
+        />
+      )}
+    </div>
+  );
+}

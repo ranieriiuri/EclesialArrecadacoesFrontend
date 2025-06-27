@@ -38,7 +38,7 @@ export default function Dashboard() {
     {
       label: "Painel evento",
       icon: LayoutDashboard,
-      to: "/sales",
+      to: "/events/panel",
     },
     {
       label: "Eventos Anteriores",
