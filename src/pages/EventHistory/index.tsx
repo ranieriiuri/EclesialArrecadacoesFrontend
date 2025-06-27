@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import api from "@/services/api";
 import { Evento } from "@/types/Evento";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 
 export default function EventHistory() {
   const navigate = useNavigate();
@@ -17,8 +17,13 @@ export default function EventHistory() {
   });
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-10">
-      <h1 className="text-2xl font-bold text-zinc-800 mb-8">Eventos Anteriores</h1>
+    <div className="min-h-screen flex flex-col bg-zinc-100">
+      <div className="flex items-center justify-between mb-6 px-6 py-10">
+            <button onClick={() => navigate(-1)} className="text-sm !text-[12px] !bg-gray-400 text-white hover:text-amber-700">
+             <ArrowLeft />
+            </button>
+        </div>
+      <h2 className="text-4xl font-bold text-center text-amber-600 mb-6 p-6">Eventos Anteriores</h2>
 
       {isLoading ? (
         <div className="space-y-4">
@@ -26,11 +31,11 @@ export default function EventHistory() {
           <Skeleton className="h-24 rounded-xl" />
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 ">
           {eventos?.map((evento) => (
             <div
               key={evento.id}
-              className="bg-white rounded-2xl p-5 shadow hover:shadow-md transition border border-transparent hover:border-zinc-200 cursor-pointer"
+              className="bg-white rounded-2xl p-5 shadow hover:shadow-md transition border border-slate-700 hover:border-zinc-200 hover:bg-slate-600 cursor-pointer"
               onClick={() => navigate(`/events/history/${evento.id}`)}
             >
               <div className="flex items-center justify-between mb-2">
@@ -39,10 +44,10 @@ export default function EventHistory() {
                 </h2>
                 <ArrowRight className="w-4 h-4 text-zinc-400" />
               </div>
-              <p className="text-sm text-zinc-600 italic mb-1">
+              <p className="text-sm text-zinc-600 italic mb-1 hover:text-white">
                 {evento.descricao || "Sem descrição"}
               </p>
-              <p className="text-xs text-zinc-500">
+              <p className="text-xs text-amber-600 ">
                 {evento.dataInicio} — {evento.dataFim}
               </p>
               {evento.criadoPor?.nome && (
