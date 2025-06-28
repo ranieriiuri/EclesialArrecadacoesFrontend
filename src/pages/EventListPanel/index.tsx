@@ -33,7 +33,7 @@ export default function EventListPanel() {
           <Skeleton className="h-24 rounded-xl" />
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 ">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 p-4">
           {eventos?.map((evento) => (
             <div
               key={evento.id}

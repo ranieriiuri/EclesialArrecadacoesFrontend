@@ -1,12 +1,69 @@
-# React + Vite
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+---
 
-Currently, two official plugins are available:
+## 💻 Frontend - `README.md`
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+```markdown
+# Eclesial - Frontend
 
-## Expanding the ESLint configuration
+Frontend do sistema **Eclesial**, uma aplicação React moderna para controle de usuários, igrejas, estoque de peças, eventos, doações e vendas.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## ⚙️ Tecnologias
+
+- React + Vite
+- TypeScript
+- TailwindCSS + ShadCN UI
+- Axios (com interceptor de JWT)
+- React Query
+- React Router
+- Cloudinary (upload de imagem via backend)
+- Zod (validação de formulários)
+- Modal/Dialog (ShadCN)
+- Framer Motion (animações)
+
+## 📦 Funcionalidades
+
+### 🔐 Autenticação
+- Login e registro com token JWT
+- Hook `useAuth` para controle global de autenticação
+- Armazenamento de token no `localStorage`
+
+### 👤 Conta do Usuário
+- Visualização de dados completos (nome, CPF, igreja, endereço)
+- Atualização de informações e senha
+- Upload de foto de perfil
+- Exclusão da conta
+
+### 🏛 Igreja
+- Visualização e vínculo com igreja no cadastro
+
+### 📦 Estoque
+- Página de estoque com:
+  - Listagem paginada de peças (máx. 30)
+  - Filtro por categoria
+  - Cadastro de nova peça com doador e doação
+  - Atualização e exclusão de peça
+  - Modal com formulário validado
+
+### 📆 Painel de Eventos
+- Listagem de eventos ativos (planejando/em andamento)
+- Acesso direto via rota `/events/panel/:id`
+- Iniciar/finalizar evento
+- Listar peças disponíveis
+- Registrar venda de peça
+  - Quantidade ajustável
+  - Preço editável
+  - Valor arrecadado calculado automaticamente
+
+### 📈 Relatórios
+- Relatórios de vendas por evento ou período (em construção)
+- Integração com backend para dados prontos
+- Ranking "maiores doadores" por período
+
+## 🚀 Rodando o projeto
+
+```bash
+npm install
+npm run dev
+```
+Acesso https em: https://localhost:5173

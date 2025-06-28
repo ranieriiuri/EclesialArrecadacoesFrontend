@@ -2,11 +2,14 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import api from "@/services/api";
 import { RankingDoador } from "@/types/RankingDoador";
+import { ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function DonorsRanking() {
   const [inicio, setInicio] = useState("");
   const [fim, setFim] = useState("");
   const [buscaAtiva, setBuscaAtiva] = useState(false);
+  const navigate = useNavigate();
 
   const { data, isLoading, error, refetch } = useQuery<RankingDoador[]>({
     queryKey: ["donorsRanking", inicio, fim],
@@ -34,8 +37,14 @@ export default function DonorsRanking() {
   const dataOrdenada = data ? [...data].sort((a, b) => b.totalDoacoes - a.totalDoacoes) : [];
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6 text-center">Ranking dos Maiores Doadores</h1>
+    <div className="min-h-screen flex flex-col bg-zinc-100 max-w-5xl mx-auto px-6 py-6">
+        <div className="flex items-center justify-between mb-6 px-6 py-6">
+            <button onClick={() => navigate(-1)} className="text-sm !text-[12px] !bg-gray-400 text-white hover:text-amber-700">
+             <ArrowLeft />
+            </button>
+        </div>
+
+      <h2 className="text-4xl text-amber-600 font-bold mb-6 text-center">Ranking Doadores</h2>
 
       <form
         onSubmit={handleSubmit}
@@ -69,7 +78,7 @@ export default function DonorsRanking() {
         </div>
         <button
           type="submit"
-          className="bg-amber-600 hover:bg-amber-700 text-white font-semibold px-6 py-3 rounded shadow transition"
+          className="!bg-slate-700 hover:text-amber-600 text-white font-semibold px-6 py-3 rounded shadow transition"
         >
           Buscar
         </button>
@@ -86,7 +95,7 @@ export default function DonorsRanking() {
       {dataOrdenada && dataOrdenada.length > 0 && (
         <table className="w-full border-collapse border border-gray-300">
           <thead>
-            <tr className="bg-amber-600 text-white">
+            <tr className="bg-slate-400 text-slate-800">
               <th className="border border-gray-300 px-4 py-2">Posição</th>
               <th className="border border-gray-300 px-4 py-2 text-left">Nome do Doador</th>
               <th className="border border-gray-300 px-4 py-2 text-center">Total Doações</th>
